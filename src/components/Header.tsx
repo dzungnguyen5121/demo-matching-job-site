@@ -88,7 +88,7 @@ export function Header({
 }: HeaderProps) {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   const handleLogout = () => {
     logout();

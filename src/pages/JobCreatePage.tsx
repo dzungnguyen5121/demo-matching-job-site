@@ -118,10 +118,10 @@ function TagsInput({
   return (
     <div className="rounded-xl border border-slate-300 bg-white p-2">
       <div className="flex flex-wrap gap-2">
-        {value.map((t) => (
-          <span key={t} className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs text-blue-700 ring-1 ring-blue-600/20">
-            {t}
-            <button className="text-slate-500 hover:text-rose-600" onClick={() => remove(t)} title={t('jobCreate_tag_remove')}>✕</button>
+        {value.map((tag) => (
+          <span key={tag} className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs text-blue-700 ring-1 ring-blue-600/20">
+            {tag}
+            <button className="text-slate-500 hover:text-rose-600" onClick={() => remove(tag)} title={t('jobCreate_tag_remove')}>✕</button>
           </span>
         ))}
 
