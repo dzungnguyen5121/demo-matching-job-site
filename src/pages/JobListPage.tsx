@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Footer } from "../components/Footer";
 import { Header } from "../components/Header";
-import { Plus } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 /**
@@ -49,19 +49,19 @@ const fmtDate = (iso: string) => {
 const uid = () => Math.random().toString(36).slice(2, 9);
 
 const MOCK_JOBS_DATA: JobItem[] = [
-  { id: uid(), title: "joblist_mock_job1_title", description: "joblist_mock_job1_desc", postedAt: "2025-06-12", expiredAt: "2025-07-12", status: "open", applicants: [
+  { id: uid(), title: "joblist_mock_job1_title", description: "joblist_mock_job1_desc_detail", postedAt: "2025-06-12", expiredAt: "2025-07-12", status: "open", applicants: [
     { id: "cand-001", name: "joblist_mock_applicant1_name", status: "pending" },
     { id: "cand-002", name: "joblist_mock_applicant2_name", status: "pending" },
     { id: "cand-003", name: "joblist_mock_applicant3_name", status: "approved" },
     { id: "cand-004", name: "joblist_mock_applicant4_name", status: "rejected" },
   ]},
-  { id: uid(), title: "joblist_mock_job2_title", description: "joblist_mock_job2_desc", postedAt: "2025-08-05", expiredAt: "2025-09-05", status: "closed", applicants: [
+  { id: uid(), title: "joblist_mock_job2_title", description: "joblist_mock_job2_desc_detail", postedAt: "2025-08-05", expiredAt: "2025-09-05", status: "closed", applicants: [
     { id: uid(), name: "joblist_mock_applicant5_name", status: "approved" },
   ]},
-  { id: uid(), title: "joblist_mock_job3_title", description: "joblist_mock_job3_desc", postedAt: "2025-07-28", expiredAt: "2025-08-28", status: "open", applicants: [] },
+  { id: uid(), title: "joblist_mock_job3_title", description: "joblist_mock_job3_desc_detail", postedAt: "2025-07-28", expiredAt: "2025-08-28", status: "open", applicants: [] },
   // Công việc nháp
-  { id: uid(), title: "joblist_mock_job4_title", description: "joblist_mock_job4_desc", postedAt: "2025-09-10", expiredAt: "2025-10-10", status: "draft", applicants: [] },
-  { id: uid(), title: "joblist_mock_job5_title", description: "joblist_mock_job5_desc", postedAt: "2025-09-15", expiredAt: "2025-10-15", status: "draft", applicants: [] },
+  { id: uid(), title: "joblist_mock_job4_title", description: "joblist_mock_job4_desc_detail", postedAt: "2025-09-10", expiredAt: "2025-10-10", status: "draft", applicants: [] },
+  { id: uid(), title: "joblist_mock_job5_title", description: "joblist_mock_job5_desc_detail", postedAt: "2025-09-15", expiredAt: "2025-10-15", status: "draft", applicants: [] },
 ];
 
 export default function JobListPage() {
@@ -564,40 +564,81 @@ function JobDialog({
 function JobDetailDialog({ job, onClose }: { job: JobItem; onClose: () => void; }) {
   const { t } = useTranslation();
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-slate-900/50 p-4" role="dialog" aria-modal="true">
-      <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
-        <h3 className="mb-4 text-lg font-semibold">{job.title}</h3>
-
-        <div className="space-y-3 text-sm">
-          <div>
-            <p className="font-medium text-slate-600">{t('jobDetailDialog_desc')}</p>
-            <p className="mt-1 text-slate-800 whitespace-pre-wrap">{job.description}</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <p className="font-medium text-slate-600">{t('jobDetailDialog_posted')}</p>
-              <p className="mt-1 text-slate-800">{fmtDate(job.postedAt)}</p>
-            </div>
-            <div>
-              <p className="font-medium text-slate-600">{t('jobDetailDialog_expires')}</p>
-              <p className="mt-1 text-slate-800">{fmtDate(job.expiredAt)}</p>
-            </div>
-            <div>
-              <p className="font-medium text-slate-600">{t('jobDetailDialog_status')}</p>
-              <p className="mt-1 text-slate-800">{job.status === 'open' ? t('jobDialog_status_open') : job.status === 'closed' ? t('jobDialog_status_closed') : t('jobDetailDialog_status_draft')}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-6 flex justify-end">
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/50 p-4 pt-10"
+      role="dialog"
+      aria-modal="true"
+      onClick={onClose}
+    >
+      <div
+        className="relative mx-auto w-full max-w-4xl rounded-2xl bg-white shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <header className="flex items-center justify-between border-b border-slate-200 p-4 sm:p-6">
+          <h3 className="text-lg font-semibold">{job.title}</h3>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+            className="rounded-full p-1 text-slate-500 hover:bg-slate-100"
+          >
+            <X size={20} />
+            <span className="sr-only">Đóng</span>
+          </button>
+        </header>
+
+        <div className="grid gap-6 p-4 sm:p-6 md:grid-cols-3">
+          <div className="space-y-4 md:col-span-2">
+            <div>
+              <h4 className="mb-2 text-base font-semibold text-slate-800">{t('jobDetailDialog_desc')}</h4>
+              <p className="whitespace-pre-wrap text-sm text-slate-600">{job.description}</p>
+            </div>
+          </div>
+
+          <div className="space-y-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <h4 className="text-base font-semibold text-slate-800">{t('jobDetailDialog_info')}</h4>
+            <div className="space-y-3 text-sm">
+              <div>
+                <p className="font-medium text-slate-500">{t('jobDetailDialog_status')}</p>
+                <p className="mt-1 font-semibold text-slate-800">
+                  <span
+                    className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                      job.status === 'open' ? 'bg-emerald-100 text-emerald-700' :
+                      job.status === 'closed' ? 'bg-slate-200 text-slate-700' :
+                      'bg-amber-100 text-amber-700'
+                    }`}
+                  >
+                    {job.status === 'open' ? t('jobDialog_status_open') : job.status === 'closed' ? t('jobDialog_status_closed') : t('jobDetailDialog_status_draft')}
+                  </span>
+                </p>
+              </div>
+              <hr className="border-slate-200" />
+              <div>
+                <p className="font-medium text-slate-500">{t('jobDetailDialog_posted')}</p>
+                <p className="mt-1 text-slate-800">{fmtDate(job.postedAt)}</p>
+              </div>
+              <hr className="border-slate-200" />
+              <div>
+                <p className="font-medium text-slate-500">{t('jobDetailDialog_expires')}</p>
+                <p className="mt-1 text-slate-800">{fmtDate(job.expiredAt)}</p>
+              </div>
+              <hr className="border-slate-200" />
+              <div>
+                <p className="font-medium text-slate-500">{t('jobDetailDialog_applicants')}</p>
+                <p className="mt-1 text-slate-800">{job.applicants.length}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer className="flex justify-end gap-2 border-t border-slate-200 p-4 sm:p-6">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             {t('jobDetailDialog_close')}
           </button>
-        </div>
+        </footer>
       </div>
     </div>
   );
