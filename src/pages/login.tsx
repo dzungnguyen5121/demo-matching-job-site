@@ -9,6 +9,7 @@ import { Footer } from "../components/Footer";
 import { useState, type FormEvent } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useTranslation, Trans } from 'react-i18next';
 
 /**
  * Trang Đăng nhập – Modern UI (TailwindCSS)
@@ -20,6 +21,7 @@ import { useNavigate } from "react-router-dom";
  */
 
 export default function LoginPage() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -37,7 +39,7 @@ export default function LoginPage() {
         navigate('/poster/jobs');
       }
     } catch (err) {
-      setError('Invalid username or password');
+      setError(t('invalid_credentials'));
     }
   };
 
@@ -58,16 +60,18 @@ export default function LoginPage() {
         {/* Panel trái: Brand & lợi ích ngắn */}
         <section className="order-2 lg:order-1">
           <div className="mx-auto max-w-xl">
-            <h1 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">Chào mừng trở lại 👋</h1>
+            <h1 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">{t('login_welcome')}</h1>
             <p className="mb-8 text-slate-600">
-              Đăng nhập để tiếp tục <span className="font-medium">tìm việc</span> hoặc <span className="font-medium">đăng dự án</span> trong hệ sinh thái DroneWork.
+              <Trans i18nKey="login_prompt">
+                Đăng nhập để tiếp tục <span className="font-medium">tìm việc</span> hoặc <span className="font-medium">đăng dự án</span> trong hệ sinh thái DroneWork.
+              </Trans>
             </p>
 
             <ul className="space-y-3">
               {[
-                { title: "Tìm kiếm việc nhanh chóng", desc: "Bộ lọc thông minh – gợi ý phù hợp", icon: Search },
-                { title: "Quản lý hồ sơ dễ dàng", desc: "Lưu dự án yêu thích, theo dõi ứng tuyển", icon: ClipboardList },
-                { title: "Nhắn tin trực tiếp", desc: "Trao đổi nhanh với đối tác", icon: MessageCircle },
+                { title: t('feature1_title'), desc: t('feature1_desc'), icon: Search },
+                { title: t('feature2_title'), desc: t('feature2_desc'), icon: ClipboardList },
+                { title: t('feature3_title'), desc: t('feature3_desc'), icon: MessageCircle },
               ].map((item, i) => (
                 <li key={i} className="group flex items-start gap-3 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition hover:shadow-md">
                   <div className="mt-0.5 grid h-8 w-8 place-items-center rounded-xl bg-blue-600/10 ring-1 ring-blue-600/20 group-hover:bg-blue-600/15">
@@ -88,8 +92,8 @@ export default function LoginPage() {
           <div className="mx-auto w-full max-w-md">
             <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-900/5">
               <div className="mb-6 text-center">
-                <h2 className="text-2xl font-bold tracking-tight">Đăng nhập</h2>
-                <p className="mt-1 text-sm text-slate-600">Nhập email và mật khẩu của bạn</p>
+                <h2 className="text-2xl font-bold tracking-tight">{t('login_form_title')}</h2>
+                <p className="mt-1 text-sm text-slate-600">{t('login_form_desc')}</p>
               </div>
 
               <form
@@ -99,14 +103,14 @@ export default function LoginPage() {
               >
                 {error && <p className="text-red-500 text-sm text-center">{error}</p>}
                 <label className="block" htmlFor="email">
-                  <span className="mb-1 block text-sm font-medium">Email</span>
+                  <span className="mb-1 block text-sm font-medium">{t('email')}</span>
                   <div className="relative">
                     <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
                     <input
                       id="email"
                       type="email"
                       required
-                      placeholder="you@example.com"
+                      placeholder={t('you@example.com')}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="w-full rounded-xl border border-slate-300 bg-white px-10 py-3 text-[15px] outline-none ring-4 ring-transparent transition placeholder:text-slate-400 focus:border-blue-600 focus:ring-blue-600/20"
@@ -115,14 +119,14 @@ export default function LoginPage() {
                 </label>
 
                 <label className="block" htmlFor="password">
-                  <span className="mb-1 block text-sm font-medium">Mật khẩu</span>
+                  <span className="mb-1 block text-sm font-medium">{t('password')}</span>
                   <div className="relative">
                     <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
                     <input
                       id="password"
                       type="password"
                       required
-                      placeholder="••••••••"
+                      placeholder={t('••••••••')}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="w-full rounded-xl border border-slate-300 bg-white px-10 py-3 text-[15px] outline-none ring-4 ring-transparent transition placeholder:text-slate-400 focus:border-blue-600 focus:ring-blue-600/20"
@@ -133,10 +137,10 @@ export default function LoginPage() {
                 <div className="flex items-center justify-between">
                   <label className="flex select-none items-center gap-2 text-sm">
                     <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600" />
-                    Ghi nhớ đăng nhập
+                    {t('remember_me')}
                   </label>
                   <a href="#forgot" className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline">
-                    Quên mật khẩu?
+                    {t('forgot_password')}
                   </a>
                 </div>
 
@@ -144,11 +148,11 @@ export default function LoginPage() {
                   type="submit"
                   className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-600/30"
                 >
-                  Đăng nhập
+                  {t('login_button')}
                 </button>
 
                 <div className="relative py-2 text-center">
-                  <span className="bg-white px-2 text-xs text-slate-500">hoặc</span>
+                  <span className="bg-white px-2 text-xs text-slate-500">{t('or')}</span>
                   <div className="absolute inset-x-0 top-1/2 -z-10 h-px -translate-y-1/2 bg-slate-200" />
                 </div>
 
@@ -160,35 +164,37 @@ export default function LoginPage() {
                       <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>
                       <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571l6.19,5.238C42.012,35.195,44,30.028,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>
                     </svg>
-                    Đăng nhập với Google
+                    {t('login_with_google')}
                   </button>
                   <button type="button" className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium transition hover:bg-slate-100">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" className="h-5 w-5" fill="#0A66C2">
                       <path d="M100.28 448H7.4V148.9h92.88zM53.79 108.1C24.09 108.1 0 83.5 0 53.8a53.79 53.79 0 0 1 107.58 0c0 29.7-24.1 54.3-53.79 54.3zM447.9 448h-92.68V302.4c0-34.7-.7-79.2-48.29-79.2-48.29 0-55.69 37.7-55.69 76.7V448h-92.78V148.9h89.08v40.8h1.3c12.4-23.5 42.69-48.3 87.88-48.3 94 0 111.28 61.9 111.28 142.3V448z"/>
                     </svg>
-                    Đăng nhập với LinkedIn
+                    {t('login_with_linkedin')}
                   </button>
                 </div>
 
                 <p className="text-center text-sm text-slate-600">
-                  Chưa có tài khoản? {" "}
-                  <a href="#signup" className="font-semibold text-blue-600 hover:underline">Đăng ký ngay</a>
+                  {t('no_account')}{" "}
+                  <a href="#signup" className="font-semibold text-blue-600 hover:underline">{t('signup_now')}</a>
                 </p>
               </form>
             </div>
 
             {/* Demo credentials */}
             <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4 text-center text-sm text-slate-600">
-              <h4 className="font-semibold">Thông tin đăng nhập Demo</h4>
+              <h4 className="font-semibold">{t('demo_credentials')}</h4>
               <div className="mt-2 space-y-1">
-                <div><strong className="font-medium text-slate-800">Seeker:</strong> seeker@email.com / 12345678</div>
-                <div><strong className="font-medium text-slate-800">Poster:</strong> poster@email.com / 12345678</div>
+                <div><strong className="font-medium text-slate-800">{t('seeker')}:</strong> seeker@email.com / 12345678</div>
+                <div><strong className="font-medium text-slate-800">{t('poster')}:</strong> poster@email.com / 12345678</div>
               </div>
             </div>
 
             {/* Liên kết pháp lý */}
             <p className="mt-6 text-center text-xs text-slate-500">
-              Khi đăng nhập, bạn đồng ý với <a className="underline hover:no-underline" href="#terms">Điều khoản sử dụng</a> và <a className="underline hover:no-underline" href="#privacy">Chính sách bảo mật</a>.
+              <Trans i18nKey="login_agreement">
+                Khi đăng nhập, bạn đồng ý với <a className="underline hover:no-underline" href="#terms">Điều khoản sử dụng</a> và <a className="underline hover:no-underline" href="#privacy">Chính sách bảo mật</a>.
+              </Trans>
             </p>
           </div>
         </section>

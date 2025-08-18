@@ -4,6 +4,7 @@ import { Footer } from "../components/Footer";
 import { Header } from "../components/Header";
 import { ArrowLeft } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 
 /* =============================================================================
    Types
@@ -86,6 +87,7 @@ function TagsInput({
   disabled?: boolean;
 }) {
   const [draft, setDraft] = useState("");
+  const { t } = useTranslation();
 
   // Thêm tag (Enter hoặc click nút)
   const add = (raw?: string) => {
@@ -107,7 +109,7 @@ function TagsInput({
             <span key={t} className="rounded-full bg-blue-50 px-3 py-1 text-xs text-blue-700 ring-1 ring-blue-600/20">{t}</span>
           ))
         ) : (
-          <span className="text-sm text-slate-500">Không có thẻ</span>
+          <span className="text-sm text-slate-500">{t('jobCreate_tag_noTags')}</span>
         )}
       </div>
     );
@@ -119,7 +121,7 @@ function TagsInput({
         {value.map((t) => (
           <span key={t} className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs text-blue-700 ring-1 ring-blue-600/20">
             {t}
-            <button className="text-slate-500 hover:text-rose-600" onClick={() => remove(t)} title="Xóa">✕</button>
+            <button className="text-slate-500 hover:text-rose-600" onClick={() => remove(t)} title={t('jobCreate_tag_remove')}>✕</button>
           </span>
         ))}
 
@@ -132,10 +134,10 @@ function TagsInput({
               add();
             }
           }}
-          placeholder="Thêm thẻ & Enter"
+          placeholder={t('jobCreate_tag_placeholder')}
           className="flex-1 min-w-[160px] border-none outline-none bg-transparent text-sm placeholder:text-slate-400"
         />
-        <button onClick={() => add()} className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:brightness-110">Thêm</button>
+        <button onClick={() => add()} className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:brightness-110">{t('jobCreate_tag_add')}</button>
       </div>
     </div>
   );
@@ -154,6 +156,7 @@ function PriceInput({
   disabled?: boolean;
 }) {
   const set = (patch: Partial<JobPrice>) => onChange?.({ ...value, ...patch });
+  const { t } = useTranslation();
 
   return (
     <div className="flex gap-2">
@@ -165,7 +168,7 @@ function PriceInput({
         disabled={disabled}
         onChange={(e) => set({ amount: clamp(Number(e.target.value || 0), 0, 1e12) })}
         className="w-40 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/20 disabled:bg-slate-100"
-        placeholder="Giá trị"
+        placeholder={t('jobCreate_price_placeholder')}
       />
       <select
         value={value.currency}
@@ -182,8 +185,8 @@ function PriceInput({
         onChange={(e) => set({ unit: e.target.value as PriceUnit })}
         className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/20 disabled:bg-slate-100"
       >
-        <option value="project">/ dự án</option>
-        <option value="hour">/ giờ</option>
+        <option value="project">{t('jobCreate_price_perProject')}</option>
+        <option value="hour">{t('jobCreate_price_perHour')}</option>
       </select>
     </div>
   );
@@ -194,6 +197,7 @@ function PriceInput({
 ============================================================================= */
 function JobPosterJobDetail({ mode, initial }: { mode: Mode; initial?: Partial<JobData> }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const readOnly = mode === "read";
   const isCreate = mode === "create";
   const isUpdate = mode === "update";
@@ -211,28 +215,28 @@ function JobPosterJobDetail({ mode, initial }: { mode: Mode; initial?: Partial<J
 
   // Chip mode theo UI
   const modeChip = isCreate
-    ? { text: "Create", cls: "bg-blue-100 text-blue-700" }
+    ? { text: t('jobCreate_mode_create'), cls: "bg-blue-100 text-blue-700" }
     : isUpdate
-    ? { text: "Update", cls: "bg-violet-100 text-violet-700" }
-    : { text: "Read", cls: "bg-slate-200 text-slate-700" };
+    ? { text: t('jobCreate_mode_update'), cls: "bg-violet-100 text-violet-700" }
+    : { text: t('jobCreate_mode_read'), cls: "bg-slate-200 text-slate-700" };
 
   // Validate tất cả trường (đơn giản, có thể thay bằng lib form)
   const validate = () => {
     const e: typeof errors = {};
-    if (!title || title.length < 5) e.title = "Tiêu đề tối thiểu 5 ký tự.";
-    if (title && title.length > 100) e.title = "Tiêu đề tối đa 100 ký tự.";
-    if (!description || countWords(description) < 50) e.description = "Mô tả tối thiểu 50 từ.";
-    if (!category) e.category = "Vui lòng chọn danh mục.";
-    if (!dueDate || new Date(dueDate) < new Date(todayISO())) e.dueDate = "Ngày hết hạn không hợp lệ.";
-    if (!price || Number(price.amount) <= 0) e.price = "Giá trị phải lớn hơn 0.";
+    if (!title || title.length < 5) e.title = t('jobCreate_validation_title_min');
+    if (title && title.length > 100) e.title = t('jobCreate_validation_title_max');
+    if (!description || countWords(description) < 50) e.description = t('jobCreate_validation_desc_min');
+    if (!category) e.category = t('jobCreate_validation_category');
+    if (!dueDate || new Date(dueDate) < new Date(todayISO())) e.dueDate = t('jobCreate_validation_dueDate');
+    if (!price || Number(price.amount) <= 0) e.price = t('jobCreate_validation_price');
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
   // Demo actions
-  const saveDraft = () => { if (validate()) alert("Đã lưu nháp ✅ (demo)"); };
-  const publish = () => { if (validate()) alert(isCreate ? "Đăng công việc thành công ✅ (demo)" : "Cập nhật & đăng công việc ✅ (demo)"); };
-  const saveChanges = () => { if (validate()) alert("Đã lưu thay đổi ✅ (demo)"); };
+  const saveDraft = () => { if (validate()) alert(t('jobCreate_alert_draftSaved')); };
+  const publish = () => { if (validate()) alert(isCreate ? t('jobCreate_alert_published') : t('jobCreate_alert_updatedAndPublished')); };
+  const saveChanges = () => { if (validate()) alert(t('jobCreate_alert_changesSaved')); };
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -241,14 +245,14 @@ function JobPosterJobDetail({ mode, initial }: { mode: Mode; initial?: Partial<J
         <button
           onClick={() => navigate("/poster/jobs")}
           className="grid h-12 w-12 flex-shrink-0 place-items-center rounded-full bg-white text-slate-800 shadow-md ring-1 ring-slate-900/5 transition hover:shadow-lg"
-          title="Quay lại danh sách"
+          title={t('jobList_pageTitle')}
         >
           <ArrowLeft size={24} />
         </button>
         <nav className="text-sm text-slate-500">
-          <span className="cursor-pointer hover:underline">Công việc của tôi</span>
+          <span className="cursor-pointer hover:underline">{t('jobCreate_breadcrumb_myJobs')}</span>
           <span className="mx-2">/</span>
-          <span className="text-slate-700">{title || "Tạo mới"}</span>
+          <span className="text-slate-700">{title || t('jobCreate_breadcrumb_new')}</span>
         </nav>
       </div>
 
@@ -256,7 +260,7 @@ function JobPosterJobDetail({ mode, initial }: { mode: Mode; initial?: Partial<J
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
-            {isCreate ? "Tạo công việc mới" : title || "Chi tiết công việc"}
+            {isCreate ? t('jobCreate_title_new') : title || t('jobCreate_title_detail')}
           </h1>
           <div className="mt-2 flex items-center gap-2 text-sm">
             <span className={`rounded-full px-2.5 py-1 ${modeChip.cls}`}>{modeChip.text}</span>
@@ -265,7 +269,7 @@ function JobPosterJobDetail({ mode, initial }: { mode: Mode; initial?: Partial<J
         {/* Tuỳ ý thêm nút phụ ở đây (VD: Xem trước SEO) cho Create/Update */}
         {!readOnly && (
           <button className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm hover:bg-slate-50">
-            👁️ Xem trước
+            {t('jobCreate_previewButton')}
           </button>
         )}
       </div>
@@ -275,21 +279,21 @@ function JobPosterJobDetail({ mode, initial }: { mode: Mode; initial?: Partial<J
         {/* LEFT */}
         <div className="lg:col-span-2 space-y-5">
           {/* Title */}
-          <Field label="Title" required hint="Khuyến nghị 50–70 ký tự." error={errors.title}>
+          <Field label={t('jobCreate_field_title')} required hint={t('jobCreate_field_title_hint')} error={errors.title}>
             <input
               value={title}
               disabled={readOnly}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Nhập tiêu đề ngắn gọn, dễ hiểu…"
+              placeholder={t('jobCreate_field_title_placeholder')}
               className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/20 disabled:bg-slate-100"
             />
           </Field>
 
           {/* Description */}
           <Field
-            label="Description"
+            label={t('jobCreate_field_desc')}
             required
-            hint={`Tối thiểu 50 từ • Hiện có ${countWords(description)} từ.`}
+            hint={t('jobCreate_field_desc_hint', { count: countWords(description) })}
             error={errors.description}
           >
             <textarea
@@ -297,13 +301,13 @@ function JobPosterJobDetail({ mode, initial }: { mode: Mode; initial?: Partial<J
               value={description}
               disabled={readOnly}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Mô tả yêu cầu, phạm vi, tiêu chí bàn giao, điều kiện an toàn bay, v.v."
+              placeholder={t('jobCreate_field_desc_placeholder')}
               className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/20 disabled:bg-slate-100"
             />
           </Field>
 
           {/* Tags (SEO) */}
-          <Field label="Tag (SEO)" hint="Khuyến nghị 3–8 thẻ (không bắt buộc).">
+          <Field label={t('jobCreate_field_tags')} hint={t('jobCreate_field_tags_hint')}>
             <TagsInput value={tags} onChange={setTags} disabled={readOnly} />
           </Field>
         </div>
@@ -311,24 +315,24 @@ function JobPosterJobDetail({ mode, initial }: { mode: Mode; initial?: Partial<J
         {/* RIGHT */}
         <div className="space-y-5">
           {/* Category */}
-          <Field label="Category" required error={errors.category}>
+          <Field label={t('jobCreate_field_category')} required error={errors.category}>
             <select
               value={category}
               disabled={readOnly}
               onChange={(e) => setCategory(e.target.value)}
               className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/20 disabled:bg-slate-100"
             >
-              <option value="">— Chọn danh mục —</option>
-              <option value="survey">Khảo sát</option>
-              <option value="inspection">Kiểm định</option>
-              <option value="mapping">Lập bản đồ</option>
-              <option value="photography">Chụp ảnh</option>
-              <option value="videography">Quay video</option>
+              <option value="">{t('jobCreate_category_select')}</option>
+              <option value="survey">{t('jobCreate_category_survey')}</option>
+              <option value="inspection">{t('jobCreate_category_inspection')}</option>
+              <option value="mapping">{t('jobCreate_category_mapping')}</option>
+              <option value="photography">{t('jobCreate_category_photo')}</option>
+              <option value="videography">{t('jobCreate_category_video')}</option>
             </select>
           </Field>
 
           {/* Due Date */}
-          <Field label="Due Date" required error={errors.dueDate} hint="Ngày cutoff nhận ứng tuyển.">
+          <Field label={t('jobCreate_field_dueDate')} required error={errors.dueDate} hint={t('jobCreate_field_dueDate_hint')}>
             <input
               type="date"
               min={todayISO()}
@@ -340,7 +344,7 @@ function JobPosterJobDetail({ mode, initial }: { mode: Mode; initial?: Partial<J
           </Field>
 
           {/* Price */}
-          <Field label="Price" required error={errors.price} hint="Chọn tiền tệ & đơn vị tính.">
+          <Field label={t('jobCreate_field_price')} required error={errors.price} hint={t('jobCreate_field_price_hint')}>
             <PriceInput value={price} onChange={setPrice} disabled={readOnly} />
           </Field>
         </div>
@@ -350,21 +354,21 @@ function JobPosterJobDetail({ mode, initial }: { mode: Mode; initial?: Partial<J
       {!readOnly && (
         <div className="sticky bottom-0 mt-8 border-t border-slate-200 bg-white/80 backdrop-blur">
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-4">
-            <div className="text-sm text-slate-600">Đã sẵn sàng lưu thay đổi</div>
+            <div className="text-sm text-slate-600">{t('jobCreate_actionBar_ready')}</div>
             <div className="flex flex-wrap items-center gap-2">
               {isCreate && (
                 <>
-                  <button onClick={saveDraft} className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm hover:bg-slate-50">Lưu nháp</button>
-                  <button onClick={publish} className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:brightness-110">Đăng công việc</button>
+                  <button onClick={saveDraft} className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm hover:bg-slate-50">{t('jobCreate_actionBar_saveDraft')}</button>
+                  <button onClick={publish} className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:brightness-110">{t('jobCreate_actionBar_publish')}</button>
                 </>
               )}
               {isUpdate && (
                 <>
-                  <button onClick={saveChanges} className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:brightness-110">Lưu thay đổi</button>
-                  <button onClick={publish} className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm hover:bg-slate-50">Đăng / Bỏ đăng</button>
+                  <button onClick={saveChanges} className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:brightness-110">{t('jobCreate_actionBar_saveChanges')}</button>
+                  <button onClick={publish} className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm hover:bg-slate-50">{t('jobCreate_actionBar_publishUnpublish')}</button>
                 </>
               )}
-              <button onClick={() => navigate('/poster/jobs')} className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm hover:bg-slate-50">Hủy</button>
+              <button onClick={() => navigate('/poster/jobs')} className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm hover:bg-slate-50">{t('jobCreate_actionBar_cancel')}</button>
             </div>
           </div>
         </div>
@@ -373,8 +377,8 @@ function JobPosterJobDetail({ mode, initial }: { mode: Mode; initial?: Partial<J
       {/* Read-only: gợi ý Edit nếu có quyền */}
       {readOnly && (
         <div className="mt-8 grid place-items-center">
-          <button onClick={() => alert("Chuyển sang Update (demo)")} className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:brightness-110">
-            Chỉnh sửa
+          <button onClick={() => alert(t('alert_switch_to_update_demo'))} className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:brightness-110">
+            {t('jobCreate_editButton')}
           </button>
         </div>
       )}
@@ -388,6 +392,7 @@ function JobPosterJobDetail({ mode, initial }: { mode: Mode; initial?: Partial<J
 ============================================================================= */
 export default function JobCreatePage() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   // Lấy mode nhanh từ URL để demo; khi tích hợp router, hãy truyền bằng props/route-state
   const search = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
   const qMode = (search?.get("mode") as Mode) || "create";
@@ -409,7 +414,7 @@ export default function JobCreatePage() {
       <div className="min-h-screen bg-slate-50 text-slate-900 antialiased">
         <Header variant="guest" />
         <main className="grid h-[calc(100vh-8rem)] place-items-center">
-          <p>Đang tải...</p>
+          <p>{t('profile_loading')}</p>
         </main>
         <Footer />
       </div>

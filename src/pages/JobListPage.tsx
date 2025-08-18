@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Footer } from "../components/Footer";
 import { Header } from "../components/Header";
 import { Plus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 /**
  * Job Poster – Job List Page (React + Tailwind)
@@ -47,26 +48,48 @@ const fmtDate = (iso: string) => {
 // UID tạm để demo (thực tế nên do backend sinh ra)
 const uid = () => Math.random().toString(36).slice(2, 9);
 
+const MOCK_JOBS_DATA: JobItem[] = [
+  { id: uid(), title: "joblist_mock_job1_title", description: "joblist_mock_job1_desc", postedAt: "2025-06-12", expiredAt: "2025-07-12", status: "open", applicants: [
+    { id: "cand-001", name: "joblist_mock_applicant1_name", status: "pending" },
+    { id: "cand-002", name: "joblist_mock_applicant2_name", status: "pending" },
+    { id: "cand-003", name: "joblist_mock_applicant3_name", status: "approved" },
+    { id: "cand-004", name: "joblist_mock_applicant4_name", status: "rejected" },
+  ]},
+  { id: uid(), title: "joblist_mock_job2_title", description: "joblist_mock_job2_desc", postedAt: "2025-08-05", expiredAt: "2025-09-05", status: "closed", applicants: [
+    { id: uid(), name: "joblist_mock_applicant5_name", status: "approved" },
+  ]},
+  { id: uid(), title: "joblist_mock_job3_title", description: "joblist_mock_job3_desc", postedAt: "2025-07-28", expiredAt: "2025-08-28", status: "open", applicants: [] },
+  // Công việc nháp
+  { id: uid(), title: "joblist_mock_job4_title", description: "joblist_mock_job4_desc", postedAt: "2025-09-10", expiredAt: "2025-10-10", status: "draft", applicants: [] },
+  { id: uid(), title: "joblist_mock_job5_title", description: "joblist_mock_job5_desc", postedAt: "2025-09-15", expiredAt: "2025-10-15", status: "draft", applicants: [] },
+];
+
 export default function JobListPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   // Seed dữ liệu demo; khi tích hợp thật sẽ lấy từ API
-  const [jobs, setJobs] = useState<JobItem[]>([
-    { id: uid(), title: "Kiểm tra mái nhà bằng drone", description: "Mô tả chi tiết cho công việc kiểm tra mái nhà.", postedAt: "2025-06-12", expiredAt: "2025-07-12", status: "open", applicants: [
-      { id: "cand-001", name: "Nguyễn Minh Khôi", status: "pending" },
-      { id: "cand-002", name: "Trần Bảo Anh", status: "pending" },
-      { id: "cand-003", name: "Phạm Hải Yến", status: "approved" },
-      { id: "cand-004", name: "Lê Quang Huy", status: "rejected" },
-    ]},
-    { id: uid(), title: "Chụp ảnh công trình", description: "Mô tả cho việc chụp ảnh công trình.", postedAt: "2025-08-05", expiredAt: "2025-09-05", status: "closed", applicants: [
-      { id: uid(), name: "Phạm Thị D", status: "approved" },
-    ]},
-    { id: uid(), title: "Lập bản đồ công trường", description: "Mô tả cho việc lập bản đồ.", postedAt: "2025-07-28", expiredAt: "2025-08-28", status: "open", applicants: [] },
-    // Công việc nháp
-    { id: uid(), title: "Quay phim sự kiện thể thao", description: "Cần drone có khả năng bay nhanh và ổn định.", postedAt: "2025-09-10", expiredAt: "2025-10-10", status: "draft", applicants: [] },
-    { id: uid(), title: "Giám sát trang trại", description: "Sử dụng drone nông nghiệp để theo dõi sức khỏe cây trồng.", postedAt: "2025-09-15", expiredAt: "2025-10-15", status: "draft", applicants: [] },
-  ]);
+  const [jobs, setJobs] = useState<JobItem[]>(() => 
+    MOCK_JOBS_DATA.map(job => ({
+      ...job,
+      title: t(job.title),
+      description: t(job.description),
+      applicants: job.applicants.map(applicant => ({...applicant, name: t(applicant.name)}))
+    }))
+  );
+
+  useEffect(() => {
+    setJobs(
+      MOCK_JOBS_DATA.map(job => ({
+        ...job,
+        title: t(job.title),
+        description: t(job.description),
+        applicants: job.applicants.map(applicant => ({...applicant, name: t(applicant.name)}))
+      }))
+    );
+  }, [t]);
+
 
   // Thêm state để quản lý view hiện tại: 'list' (danh sách chính) hoặc 'archive' (kho lưu trữ)
   const [view, setView] = useState<"list" | "archive">("list");
@@ -195,7 +218,7 @@ export default function JobListPage() {
       <main className="mx-auto max-w-6xl px-4 py-10">
         <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <h1 className="text-2xl font-bold tracking-tight">
-            {view === 'list' ? 'Danh sách công việc của bạn' : 'Kho lưu trữ'}
+            {view === 'list' ? t('jobList_pageTitle') : t('jobList_archiveTitle')}
           </h1>
           <button
             type="button"
@@ -203,7 +226,7 @@ export default function JobListPage() {
             className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-120"
           >
             <Plus size={18} />
-            Thêm công việc
+            {t('jobList_addJobButton')}
           </button>
         </div>
 
@@ -215,10 +238,10 @@ export default function JobListPage() {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Tìm theo tiêu đề công việc…"
+              placeholder={t('jobList_searchPlaceholder')}
               className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-sm outline-none ring-4 ring-transparent placeholder:text-slate-400 focus:border-blue-600 focus:ring-blue-600/20"
             />
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" title={t('search_icon_alt')}>🔍</span>
           </div>
 
           {/* Lọc theo trạng thái */}
@@ -227,9 +250,9 @@ export default function JobListPage() {
             onChange={(e) => setStatus(e.target.value as any)}
             className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm focus:border-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-600/20"
           >
-            <option value="all">Trạng thái: Tất cả</option>
-            <option value="open">Đang tuyển</option>
-            <option value="closed">Đã đóng</option>
+            <option value="all">{t('jobList_statusFilter')}{t('jobList_status_all')}</option>
+            <option value="open">{t('jobList_status_open')}</option>
+            <option value="closed">{t('jobList_status_closed')}</option>
           </select>
         </div>
 
@@ -238,12 +261,12 @@ export default function JobListPage() {
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50 text-slate-600">
               <tr>
-                <th className="px-4 py-3 font-semibold">Tiêu đề công việc</th>
-                <th className="px-4 py-3 font-semibold">Ngày đăng</th>
-                <th className="px-4 py-3 font-semibold">Ngày hết hạn</th>
-                {view === 'list' && <th className="px-4 py-3 font-semibold">Trạng thái</th>}
-                {view === 'list' && <th className="px-4 py-3 font-semibold">Ứng viên</th>}
-                <th className="px-4 py-3 font-semibold">Hành động</th>
+                <th className="px-4 py-3 font-semibold">{t('jobList_table_header_title')}</th>
+                <th className="px-4 py-3 font-semibold">{t('jobList_table_header_posted')}</th>
+                <th className="px-4 py-3 font-semibold">{t('jobList_table_header_expires')}</th>
+                {view === 'list' && <th className="px-4 py-3 font-semibold">{t('jobList_table_header_status')}</th>}
+                {view === 'list' && <th className="px-4 py-3 font-semibold">{t('jobList_table_header_applicants')}</th>}
+                <th className="px-4 py-3 font-semibold">{t('jobList_table_header_actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -256,9 +279,9 @@ export default function JobListPage() {
                     <>
                       <td className="px-4 py-3">
                         {job.status === "open" ? (
-                          <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">Đang tuyển</span>
+                          <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">{t('jobList_status_open')}</span>
                         ) : (
-                          <span className="rounded-full bg-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700">Đã đóng</span>
+                          <span className="rounded-full bg-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700">{t('jobList_status_closed')}</span>
                         )}
                       </td>
                       <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
@@ -280,14 +303,14 @@ export default function JobListPage() {
                         onClick={() => onEdit(job)}
                         className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-100"
                       >
-                        Sửa
+                        {t('jobList_action_edit')}
                       </button>
                       <button
                         type="button"
                         onClick={() => onDelete(job.id)}
                         className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-700 hover:bg-rose-100"
                       >
-                        Xóa
+                        {t('jobList_action_delete')}
                       </button>
                     </div>
                   </td>
@@ -298,7 +321,7 @@ export default function JobListPage() {
               {filtered.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-4 py-10 text-center text-slate-500">
-                    Không có công việc phù hợp.
+                    {t('jobList_emptyFiltered')}
                   </td>
                 </tr>
               )}
@@ -312,20 +335,20 @@ export default function JobListPage() {
             <div key={job.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm" onClick={() => viewDetails(job)}>
               <div className="mb-1 text-base font-semibold">{job.title}</div>
               <div className="mb-3 text-xs text-slate-500">
-                <span>Ngày đăng: {fmtDate(job.postedAt)}</span>
+                <span>{t('jobList_card_posted')} {fmtDate(job.postedAt)}</span>
                 <span className="mx-2">|</span>
-                <span>Ngày hết hạn: {fmtDate(job.expiredAt)}</span>
+                <span>{t('jobList_card_expires')} {fmtDate(job.expiredAt)}</span>
               </div>
 
               {view === 'list' && (
                 <div className="mb-3 flex items-center justify-between">
                   {job.status === "open" ? (
-                    <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">Đang tuyển</span>
+                    <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">{t('jobList_status_open')}</span>
                   ) : (
-                    <span className="rounded-full bg-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700">Đã đóng</span>
+                    <span className="rounded-full bg-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700">{t('jobList_status_closed')}</span>
                   )}
                   <span className="text-sm">
-                    Ứng viên:{" "}
+                    {t('jobList_card_applicants')}{" "}
                     <button
                       type="button"
                       onClick={(e) => {
@@ -347,14 +370,14 @@ export default function JobListPage() {
                   onClick={() => onEdit(job)}
                   className="flex-1 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 hover:bg-amber-100"
                 >
-                  Sửa
+                  {t('jobList_action_edit')}
                 </button>
                 <button
                   type="button"
                   onClick={() => onDelete(job.id)}
                   className="flex-1 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 hover:bg-rose-100"
                 >
-                  Xóa
+                  {t('jobList_action_delete')}
                 </button>
               </div>
             </div>
@@ -365,14 +388,14 @@ export default function JobListPage() {
         {jobs.length === 0 && (
           <div className="mt-10 grid place-items-center rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
             <div className="mb-3 text-5xl">📄➕</div>
-            <h3 className="mb-1 text-lg font-semibold">Bạn chưa đăng công việc nào</h3>
-            <p className="mb-4 text-sm text-slate-500">Hãy bắt đầu ngay bây giờ!</p>
+            <h3 className="mb-1 text-lg font-semibold">{t('jobList_emptyGlobal_title')}</h3>
+            <p className="mb-4 text-sm text-slate-500">{t('jobList_emptyGlobal_subtitle')}</p>
             <button
               type="button"
               onClick={onAdd}
               className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-110"
             >
-              + Thêm công việc
+              {t('jobList_emptyGlobal_button')}
             </button>
           </div>
         )}
@@ -398,8 +421,8 @@ export default function JobListPage() {
       {/* Dialog xác nhận xóa: tách riêng giúp dễ tái sử dụng */}
       {confirmOpen && (
         <ConfirmDialog
-          title="Xóa công việc"
-          desc="Bạn chắc chắn muốn xóa công việc này? Hành động không thể hoàn tác."
+          title={t('jobList_confirmDialog_title')}
+          desc={t('jobList_confirmDialog_desc')}
           onCancel={() => setConfirmOpen(null)}
           onConfirm={confirmDelete}
         />
@@ -430,41 +453,42 @@ function JobDialog({
   onSave: (j: JobItem) => void;
 }) {
   const [form, setForm] = useState<JobItem>(initial);
+  const { t } = useTranslation();
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-slate-900/50 p-4" role="dialog" aria-modal="true">
       <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
-        <h3 className="mb-4 text-lg font-semibold">{form.id ? "Sửa công việc" : "Thêm công việc"}</h3>
+        <h3 className="mb-4 text-lg font-semibold">{form.id ? t('jobDialog_editTitle') : t('jobDialog_addTitle')}</h3>
 
         {/* Nhóm trường nhập liệu */}
         <div className="space-y-3">
           {/* Tiêu đề */}
           <label className="block">
-            <span className="mb-1 block text-sm font-medium">Tiêu đề công việc</span>
+            <span className="mb-1 block text-sm font-medium">{t('jobDialog_field_title')}</span>
             <input
               value={form.title}
               onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
               className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none ring-4 ring-transparent placeholder:text-slate-400 focus:border-blue-600 focus:ring-blue-600/20"
-              placeholder="Ví dụ: Khảo sát mái nhà bằng drone"
+              placeholder={t('jobDialog_field_title_placeholder')}
             />
           </label>
 
           {/* Mô tả công việc */}
           <label className="block">
-            <span className="mb-1 block text-sm font-medium">Mô tả công việc</span>
+            <span className="mb-1 block text-sm font-medium">{t('jobDialog_field_desc')}</span>
             <textarea
               value={form.description}
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
               className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none ring-4 ring-transparent placeholder:text-slate-400 focus:border-blue-600 focus:ring-blue-600/20"
               rows={5}
-              placeholder="Mô tả chi tiết về yêu cầu, trách nhiệm và kỹ năng cần thiết cho công việc."
+              placeholder={t('jobDialog_field_desc_placeholder')}
             />
           </label>
 
           {/* Hàng 3 cột: Ngày đăng, Ngày hết hạn, Trạng thái */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <label className="block">
-              <span className="mb-1 block text-sm font-medium">Ngày đăng</span>
+              <span className="mb-1 block text-sm font-medium">{t('jobDialog_field_posted')}</span>
               <input
                 type="date"
                 value={form.postedAt}
@@ -474,7 +498,7 @@ function JobDialog({
             </label>
 
             <label className="block">
-              <span className="mb-1 block text-sm font-medium">Ngày hết hạn</span>
+              <span className="mb-1 block text-sm font-medium">{t('jobDialog_field_expires')}</span>
               <input
                 type="date"
                 value={form.expiredAt}
@@ -484,15 +508,15 @@ function JobDialog({
             </label>
 
             <label className="block">
-              <span className="mb-1 block text-sm font-medium">Trạng thái</span>
+              <span className="mb-1 block text-sm font-medium">{t('jobDialog_field_status')}</span>
               <select
                 value={form.status}
                 onChange={(e) => setForm((f) => ({ ...f, status: e.target.value as any }))}
                 className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none ring-4 ring-transparent focus:border-blue-600 focus:ring-blue-600/20"
               >
-                <option value="open">Đang tuyển</option>
-                <option value="closed">Đã đóng</option>
-                <option value="draft">Lưu nháp</option>
+                <option value="open">{t('jobDialog_status_open')}</option>
+                <option value="closed">{t('jobDialog_status_closed')}</option>
+                <option value="draft">{t('jobDialog_status_draft')}</option>
               </select>
             </label>
           </div>
@@ -500,7 +524,7 @@ function JobDialog({
           {/* Số lượng ứng viên (demo) - chỉ hiển thị khi sửa */}
           {form.id && (
             <label className="block">
-              <span className="mb-1 block text-sm font-medium">Số lượng ứng viên</span>
+              <span className="mb-1 block text-sm font-medium">{t('jobDialog_field_applicants')}</span>
               <input
                 type="number"
                 min={0}
@@ -519,14 +543,14 @@ function JobDialog({
             onClick={onClose}
             className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
           >
-            Hủy
+            {t('jobDialog_cancel')}
           </button>
           <button
             type="button"
             onClick={() => onSave(form)}
             className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:brightness-110"
           >
-            Lưu
+            {t('jobDialog_save')}
           </button>
         </div>
       </div>
@@ -538,6 +562,7 @@ function JobDialog({
  * Dialog Chi tiết Công việc (Read-only)
  ** ----------------------------------------------------------------------- **/
 function JobDetailDialog({ job, onClose }: { job: JobItem; onClose: () => void; }) {
+  const { t } = useTranslation();
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-slate-900/50 p-4" role="dialog" aria-modal="true">
       <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
@@ -545,21 +570,21 @@ function JobDetailDialog({ job, onClose }: { job: JobItem; onClose: () => void; 
 
         <div className="space-y-3 text-sm">
           <div>
-            <p className="font-medium text-slate-600">Mô tả công việc</p>
+            <p className="font-medium text-slate-600">{t('jobDetailDialog_desc')}</p>
             <p className="mt-1 text-slate-800 whitespace-pre-wrap">{job.description}</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <p className="font-medium text-slate-600">Ngày đăng</p>
+              <p className="font-medium text-slate-600">{t('jobDetailDialog_posted')}</p>
               <p className="mt-1 text-slate-800">{fmtDate(job.postedAt)}</p>
             </div>
             <div>
-              <p className="font-medium text-slate-600">Ngày hết hạn</p>
+              <p className="font-medium text-slate-600">{t('jobDetailDialog_expires')}</p>
               <p className="mt-1 text-slate-800">{fmtDate(job.expiredAt)}</p>
             </div>
             <div>
-              <p className="font-medium text-slate-600">Trạng thái</p>
-              <p className="mt-1 text-slate-800">{job.status === 'open' ? 'Đang tuyển' : job.status === 'closed' ? 'Đã đóng' : 'Bản nháp'}</p>
+              <p className="font-medium text-slate-600">{t('jobDetailDialog_status')}</p>
+              <p className="mt-1 text-slate-800">{job.status === 'open' ? t('jobDialog_status_open') : job.status === 'closed' ? t('jobDialog_status_closed') : t('jobDetailDialog_status_draft')}</p>
             </div>
           </div>
         </div>
@@ -570,7 +595,7 @@ function JobDetailDialog({ job, onClose }: { job: JobItem; onClose: () => void; 
             onClick={onClose}
             className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
           >
-            Đóng
+            {t('jobDetailDialog_close')}
           </button>
         </div>
       </div>
@@ -594,6 +619,7 @@ function ConfirmDialog({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-slate-900/50 p-4" role="dialog" aria-modal="true">
       <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
@@ -605,14 +631,14 @@ function ConfirmDialog({
             onClick={onCancel}
             className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
           >
-            Hủy
+            {t('jobDialog_cancel')}
           </button>
           <button
             type="button"
             onClick={onConfirm}
             className="rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:brightness-110"
           >
-            Xóa
+            {t('jobList_action_delete')}
           </button>
         </div>
       </div>

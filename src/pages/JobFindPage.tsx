@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Footer } from "../components/Footer";
 import { Header } from "../components/Header";
+import { useTranslation } from 'react-i18next';
 
 /**
  * DroneWork – Seeker App (React + Tailwind)
@@ -33,44 +34,41 @@ const money = (n: number, cur: "USD" | "VND") =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: cur, maximumFractionDigits: 0 }).format(n);
 const uid = () => Math.random().toString(36).slice(2, 9);
 
-const MOCK_JOBS: Job[] = [
+const MOCK_JOBS_DATA: Job[] = [
   {
     id: uid(),
-    title: "Khảo sát mái nhà bằng drone",
-    summary: "Bay kiểm tra mái nhà, chụp ảnh độ phân giải cao, bàn giao ảnh + báo cáo.",
-    description:
-      "Phạm vi: Khảo sát mái nhà khu dân cư. Yêu cầu chụp ảnh raw + jpeg, chồng lấp ≥ 70%, cao độ bay 60–80m. Bàn giao: ảnh, orthophoto (nếu có), báo cáo phát hiện hư hại. Ưu tiên có kinh nghiệm bảo hiểm/roofing.",
+    title: "mock_job_1_title",
+    summary: "mock_job_1_summary",
+    description: "mock_job_1_description",
     postedAt: "2025-08-05",
-    location: "Hà Nội",
+    location: "hanoi",
     pay: { value: 45, unit: "hour", currency: "USD" },
-    duration: "3 ngày (linh hoạt)",
-    skills: ["Photogrammetry", "AEB Shooting", "Safety"],
+    duration: "mock_job_1_duration",
+    skills: ["skill_photogrammetry", "skill_aeb_shooting", "skill_safety"],
     status: "open",
   },
   {
     id: uid(),
-    title: "Lập bản đồ hiện trạng công trường",
-    summary: "Chụp ảnh mặt bằng, dựng orthophoto + DEM. Bàn giao shapefile/GeoTIFF.",
-    description:
-      "Cần tạo bản đồ hiện trạng cho công trường ~25ha. Yêu cầu GCP tối thiểu 5 điểm, sai số ≤ 3cm. Bàn giao GeoTIFF + DXF đường biên. Có máy RTK là lợi thế.",
+    title: "mock_job_2_title",
+    summary: "mock_job_2_summary",
+    description: "mock_job_2_description",
     postedAt: "2025-07-28",
-    location: "Đà Nẵng",
+    location: "danang",
     pay: { value: 1200, unit: "project", currency: "USD" },
-    duration: "1 tuần",
-    skills: ["RTK", "GCP", "Pix4D/Metashape"],
+    duration: "mock_job_2_duration",
+    skills: ["skill_rtk", "skill_gcp", "skill_pix4d_metashape"],
     status: "closingSoon",
   },
   {
     id: uid(),
-    title: "Kiểm tra cột điện cao thế",
-    summary: "Bay dọc tuyến 5km, chụp ảnh chi tiết, checklist theo tiêu chuẩn nội bộ.",
-    description:
-      "Kiểm tra 20 trụ, mỗi trụ 12 ảnh. Yêu cầu camera zoom, ảnh rõ cấu kiện. Bàn giao: ảnh + checklist khuyết điểm. Có kinh nghiệm utility inspection là lợi thế.",
+    title: "mock_job_3_title",
+    summary: "mock_job_3_summary",
+    description: "mock_job_3_description",
     postedAt: "2025-06-12",
-    location: "TP. Hồ Chí Minh",
+    location: "hochiminh_city",
     pay: { value: 60, unit: "hour", currency: "USD" },
-    duration: "4 ngày",
-    skills: ["Inspection", "Telephoto", "Checklist"],
+    duration: "mock_job_3_duration",
+    skills: ["skill_inspection", "skill_telephoto", "skill_checklist"],
     status: "closed",
   },
 ];
@@ -83,9 +81,22 @@ type Route =
 
 export default function JobFindPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [route, setRoute] = useState<Route>({ name: "list" });
   const [unreadChat] = useState(2);
   const [unreadNoti] = useState(3);
+
+  const MOCK_JOBS: Job[] = useMemo(() => {
+    return MOCK_JOBS_DATA.map(job => ({
+      ...job,
+      title: t(job.title),
+      summary: t(job.summary),
+      description: t(job.description),
+      location: t(job.location),
+      duration: t(job.duration),
+      skills: job.skills.map(skill => t(skill)),
+    }));
+  }, [t]);
 
   // Trạng thái yêu thích/ứng tuyển
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
@@ -155,7 +166,7 @@ export default function JobFindPage() {
           />
         )}
 
-        {route.name === "matches" && <Placeholder title="Matches" onBack={go.list} />}
+        {route.name === "matches" && <Placeholder title={t('matches')} onBack={go.list} />}
       </main>
 
       <Footer />
@@ -179,6 +190,7 @@ function SeekerJobListPage({
   onApply: (id: string) => void;
   onOpenDetail: (id: string) => void;
 }) {
+  const { t } = useTranslation();
   const [view, setView] = useState<"cards" | "table">("cards");
   const [query, setQuery] = useState("");
   const [location, setLocation] = useState("all");
@@ -208,15 +220,15 @@ function SeekerJobListPage({
   return (
     <div>
       <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-        <h1 className="text-2xl font-bold tracking-tight">Tìm công việc phù hợp</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t('jobFindPage_title')}</h1>
         <div className="flex items-center gap-2">
-          <span className="hidden text-sm text-slate-500 sm:inline">Chế độ hiển thị</span>
+          <span className="hidden text-sm text-slate-500 sm:inline">{t('jobFindPage_displayMode')}</span>
           <div className="rounded-xl border border-slate-200 bg-white p-1">
             <button className={`rounded-lg px-3 py-1.5 text-sm ${view === "cards" ? "bg-slate-100 font-semibold" : ""}`} onClick={() => setView("cards")}>
-              Cards
+              {t('jobFindPage_viewCards')}
             </button>
             <button className={`rounded-lg px-3 py-1.5 text-sm ${view === "table" ? "bg-slate-100 font-semibold" : ""}`} onClick={() => setView("table")}>
-              Table
+              {t('jobFindPage_viewTable')}
             </button>
           </div>
         </div>
@@ -225,7 +237,7 @@ function SeekerJobListPage({
       <div className="mb-6 grid grid-cols-1 gap-3 md:grid-cols-4">
         <div className="relative md:col-span-2">
           <input
-            placeholder="Từ khóa, kỹ năng, công cụ…"
+            placeholder={t('jobFindPage_keywordsPlaceholder')}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-sm outline-none ring-4 ring-transparent placeholder:text-slate-400 focus:border-blue-600 focus:ring-blue-600/20"
@@ -235,20 +247,20 @@ function SeekerJobListPage({
 
         <select value={location} onChange={(e) => setLocation(e.target.value)} className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm focus:border-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-600/20">
           {locations.map((loc) => (
-            <option key={loc} value={loc}>Địa điểm: {loc === "all" ? "Tất cả" : loc}</option>
+            <option key={loc} value={loc}>{t('jobFindPage_locationLabel')}{loc === "all" ? t('jobFindPage_allLocations') : loc}</option>
           ))}
         </select>
 
         <select value={type} onChange={(e) => setType(e.target.value as any)} className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm focus:border-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-600/20">
-          <option value="all">Loại trả phí: Tất cả</option>
-          <option value="hour">Theo giờ</option>
-          <option value="project">Theo dự án</option>
+          <option value="all">{t('jobFindPage_paymentTypeLabel')}{t('jobFindPage_allPaymentTypes')}</option>
+          <option value="hour">{t('jobFindPage_paymentTypeHour')}</option>
+          <option value="project">{t('jobFindPage_paymentTypeProject')}</option>
         </select>
 
         <select value={sortBy} onChange={(e) => setSortBy(e.target.value as any)} className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm focus:border-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-600/20 md:col-span-1">
-          <option value="newest">Sắp xếp: Mới nhất</option>
-          <option value="highestPay">Sắp xếp: Trả cao</option>
-          <option value="nearest">Sắp xếp: Gần nhất</option>
+          <option value="newest">{t('jobFindPage_sortByLabel')}{t('jobFindPage_sortNewest')}</option>
+          <option value="highestPay">{t('jobFindPage_sortByLabel')}{t('jobFindPage_sortHighestPay')}</option>
+          <option value="nearest">{t('jobFindPage_sortByLabel')}{t('jobFindPage_sortNearest')}</option>
         </select>
       </div>
 
@@ -274,40 +286,40 @@ function SeekerJobListPage({
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50 text-slate-600">
               <tr>
-                <th className="px-4 py-3 font-semibold">Tiêu đề</th>
-                <th className="px-4 py-3 font-semibold">Mức trả</th>
-                <th className="px-4 py-3 font-semibold">Địa điểm</th>
-                <th className="px-4 py-3 font-semibold">Thời lượng</th>
-                <th className="px-4 py-3 font-semibold">Ngày đăng</th>
-                <th className="px-4 py-3 font-semibold">Trạng thái</th>
-                <th className="px-4 py-3 font-semibold">Hành động</th>
+                <th className="px-4 py-3 font-semibold">{t('jobTable_header_title')}</th>
+                <th className="px-4 py-3 font-semibold">{t('jobTable_header_pay')}</th>
+                <th className="px-4 py-3 font-semibold">{t('jobTable_header_location')}</th>
+                <th className="px-4 py-3 font-semibold">{t('jobTable_header_duration')}</th>
+                <th className="px-4 py-3 font-semibold">{t('jobTable_header_postedDate')}</th>
+                <th className="px-4 py-3 font-semibold">{t('jobTable_header_status')}</th>
+                <th className="px-4 py-3 font-semibold">{t('jobTable_header_actions')}</th>
               </tr>
             </thead>
             <tbody>
               {results.map((j) => (
                 <tr key={j.id} className="border-t border-slate-100 hover:bg-slate-50">
                   <td className="px-4 py-3">{j.title}</td>
-                  <td className="px-4 py-3">{money(j.pay.value, j.pay.currency)}/{j.pay.unit === "hour" ? "giờ" : "dự án"}</td>
+                  <td className="px-4 py-3">{money(j.pay.value, j.pay.currency)}/{j.pay.unit === "hour" ? t('jobTable_payUnit_hour') : t('jobTable_payUnit_project')}</td>
                   <td className="px-4 py-3">{j.location}</td>
                   <td className="px-4 py-3">{j.duration}</td>
                   <td className="px-4 py-3">{fmtDate(j.postedAt)}</td>
                   <td className="px-4 py-3"><StatusBadge status={j.status} /></td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
-                      <button className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs hover:bg-slate-50" onClick={() => onOpenDetail(j.id)}>Chi tiết</button>
+                      <button className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs hover:bg-slate-50" onClick={() => onOpenDetail(j.id)}>{t('jobTable_action_details')}</button>
                       {j.status === "closed" ? (
-                        <button disabled className="cursor-not-allowed rounded-lg bg-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-500">Đã đóng</button>
+                        <button disabled className="cursor-not-allowed rounded-lg bg-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-500">{t('jobTable_action_closed')}</button>
                       ) : applied.has(j.id) ? (
-                        <span className="rounded-lg bg-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700">Đã ứng tuyển</span>
+                        <span className="rounded-lg bg-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700">{t('jobTable_action_applied')}</span>
                       ) : (
-                        <button className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:brightness-110" onClick={() => onApply(j.id)}>Ứng tuyển</button>
+                        <button className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:brightness-110" onClick={() => onApply(j.id)}>{t('jobTable_action_apply')}</button>
                       )}
                     </div>
                   </td>
                 </tr>
               ))}
               {results.length === 0 && (
-                <tr><td className="px-4 py-10 text-center text-slate-500" colSpan={7}>Không tìm thấy công việc phù hợp.</td></tr>
+                <tr><td className="px-4 py-10 text-center text-slate-500" colSpan={7}>{t('jobTable_noResults')}</td></tr>
               )}
             </tbody>
           </table>
@@ -335,21 +347,22 @@ function SeekerFavoritesPage({
   onOpenDetail: (id: string) => void;
   onBack: () => void;
 }) {
+  const { t } = useTranslation();
   const favJobs = useMemo(() => jobs.filter((j) => favorites.has(j.id)), [jobs, favorites]);
 
   return (
     <div>
-      <button onClick={onBack} className="mb-4 text-sm text-slate-600 hover:underline">← Quay lại danh sách</button>
+      <button onClick={onBack} className="mb-4 text-sm text-slate-600 hover:underline">{t('favoritesPage_backLink')}</button>
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Công việc đã yêu thích</h1>
-        <span className="text-sm text-slate-600">Tổng cộng: <b>{favJobs.length}</b></span>
+        <h1 className="text-2xl font-bold tracking-tight">{t('favoritesPage_title')}</h1>
+        <span className="text-sm text-slate-600">{t('favoritesPage_total')}<b>{favJobs.length}</b></span>
       </div>
 
       {favJobs.length === 0 ? (
         <div className="grid place-items-center rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
           <div className="mb-3 text-5xl">🩷</div>
-          <h3 className="mb-1 text-lg font-semibold">Chưa có công việc nào được lưu</h3>
-          <p className="text-sm text-slate-500">Hãy quay lại danh sách và bấm biểu tượng trái tim để lưu công việc.</p>
+          <h3 className="mb-1 text-lg font-semibold">{t('favoritesPage_empty_title')}</h3>
+          <p className="text-sm text-slate-500">{t('favoritesPage_empty_desc')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -386,9 +399,10 @@ function JobCard({
   onApply: () => void;
   onOpenDetail: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="group relative flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md">
-      <button aria-label="Yêu thích" onClick={onToggleFav} className="absolute right-4 top-4 text-xl" title={isFav ? "Bỏ lưu" : "Lưu công việc"}>
+      <button aria-label={t('jobCard_favorite_ariaLabel')} onClick={onToggleFav} className="absolute right-4 top-4 text-xl" title={isFav ? t('jobCard_favorite_title_remove') : t('jobCard_favorite_title_add')}>
         {isFav ? "❤️" : "🤍"}
       </button>
 
@@ -405,7 +419,7 @@ function JobCard({
 
       <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-600">
         <span>📍 {job.location}</span>
-        <span>💰 {money(job.pay.value, job.pay.currency)}/{job.pay.unit === "hour" ? "giờ" : "dự án"}</span>
+        <span>💰 {money(job.pay.value, job.pay.currency)}{t('payment_unit_separator')}{job.pay.unit === "hour" ? t('jobTable_payUnit_hour') : t('jobTable_payUnit_project')}</span>
         <span>⏱️ {job.duration}</span>
       </div>
 
@@ -413,21 +427,21 @@ function JobCard({
         {job.skills.slice(0, 3).map((s) => (
           <span key={s} className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-700">{s}</span>
         ))}
-        {job.skills.length > 3 && <span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-700">+{job.skills.length - 3}</span>}
+        {job.skills.length > 3 && <span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-700">{t('plus_prefix')}{job.skills.length - 3}</span>}
       </div>
 
       <div className="mt-auto flex items-center gap-2">
         <button onClick={onOpenDetail} className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium hover:bg-slate-50">
-          Xem chi tiết
+          {t('jobCard_viewDetails')}
         </button>
 
         {job.status === "closed" ? (
-          <button disabled className="flex-1 cursor-not-allowed rounded-xl bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-500">Đã đóng</button>
+          <button disabled className="flex-1 cursor-not-allowed rounded-xl bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-500">{t('jobTable_action_closed')}</button>
         ) : isApplied ? (
-          <span className="rounded-xl bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-700">Đã ứng tuyển</span>
+          <span className="rounded-xl bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-700">{t('jobTable_action_applied')}</span>
         ) : (
           <button onClick={onApply} className="flex-1 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:brightness-110">
-            Ứng tuyển
+            {t('jobTable_action_apply')}
           </button>
         )}
       </div>
@@ -436,21 +450,23 @@ function JobCard({
 }
 
 function StatusBadge({ status }: { status: JobStatus }) {
+  const { t } = useTranslation();
   if (status === "open")
-    return <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">Đang tuyển</span>;
+    return <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">{t('statusBadge_open')}</span>;
   if (status === "closingSoon")
-    return <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700">Sắp đóng</span>;
-  return <span className="rounded-full bg-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700">Đã đóng</span>;
+    return <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700">{t('statusBadge_closingSoon')}</span>;
+  return <span className="rounded-full bg-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700">{t('statusBadge_closed')}</span>;
 }
 
 function EmptyState({ onClear }: { onClear: () => void }) {
+  const { t } = useTranslation();
   return (
     <div className="col-span-full grid place-items-center rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
       <div className="mb-3 text-5xl">🔎</div>
-      <h3 className="mb-1 text-lg font-semibold">Không tìm thấy công việc phù hợp</h3>
-      <p className="mb-4 text-sm text-slate-500">Thử xoá bớt bộ lọc hoặc đổi từ khóa</p>
+      <h3 className="mb-1 text-lg font-semibold">{t('emptyState_title')}</h3>
+      <p className="mb-4 text-sm text-slate-500">{t('emptyState_desc')}</p>
       <button onClick={onClear} className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:brightness-110">
-        Xoá bộ lọc
+        {t('emptyState_clearButton')}
       </button>
     </div>
   );
@@ -473,10 +489,11 @@ function SeekerJobDetailPage({
   onApply: () => void;
 }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
       <div className="lg:col-span-3">
-        <button onClick={onBack} className="mb-3 text-sm text-slate-600 hover:underline">← Quay lại danh sách</button>
+        <button onClick={onBack} className="mb-3 text-sm text-slate-600 hover:underline">{t('jobDetailPage_backLink')}</button>
         <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
           <div className="flex items-center gap-3">
             <h1 className="text-xl font-bold">{job.title}</h1>
@@ -484,15 +501,15 @@ function SeekerJobDetailPage({
           </div>
           <div className="flex items-center gap-2">
             <button onClick={onToggleFav} className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm hover:bg-slate-50">
-              {isFav ? "❤️ Đã lưu" : "🤍 Lưu"}
+              {isFav ? t('jobDetailPage_saveButton_saved') : t('jobDetailPage_saveButton_save')}
             </button>
             {job.status === "closed" ? (
-              <button disabled className="cursor-not-allowed rounded-xl bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-500">Đã đóng</button>
+              <button disabled className="cursor-not-allowed rounded-xl bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-500">{t('jobTable_action_closed')}</button>
             ) : isApplied ? (
-              <span className="rounded-xl bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-700">Đã ứng tuyển</span>
+              <span className="rounded-xl bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-700">{t('jobTable_action_applied')}</span>
             ) : (
               <button onClick={onApply} className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:brightness-110">
-                Ứng tuyển
+                {t('jobTable_action_apply')}
               </button>
             )}
           </div>
@@ -501,17 +518,17 @@ function SeekerJobDetailPage({
 
       <article className="lg:col-span-2">
         <section className="mb-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-2 text-lg font-semibold">Tổng quan</h2>
+          <h2 className="mb-2 text-lg font-semibold">{t('jobDetailPage_overview')}</h2>
           <p className="text-sm text-slate-700">{job.summary}</p>
         </section>
 
         <section className="mb-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-2 text-lg font-semibold">Chi tiết dự án</h2>
+          <h2 className="mb-2 text-lg font-semibold">{t('jobDetailPage_projectDetails')}</h2>
           <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">{job.description}</p>
         </section>
 
         <section className="mb-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-3 text-lg font-semibold">Kỹ năng yêu cầu</h2>
+          <h2 className="mb-3 text-lg font-semibold">{t('jobDetailPage_requiredSkills')}</h2>
           <div className="flex flex-wrap gap-2">
             {job.skills.map((s) => (
               <span key={s} className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-700">{s}</span>
@@ -522,32 +539,32 @@ function SeekerJobDetailPage({
 
       <aside className="space-y-4">
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 className="mb-4 text-base font-semibold">Thông tin nhanh</h3>
+          <h3 className="mb-4 text-base font-semibold">{t('jobDetailPage_quickInfo')}</h3>
           <ul className="space-y-2 text-sm text-slate-700">
-            <li>💰 <b>{money(job.pay.value, job.pay.currency)}</b>/{job.pay.unit === "hour" ? "giờ" : "dự án"}</li>
+            <li>💰 <b>{money(job.pay.value, job.pay.currency)}</b>{t('payment_unit_separator')}{job.pay.unit === "hour" ? t('jobTable_payUnit_hour') : t('jobTable_payUnit_project')}</li>
             <li>📍 {job.location}</li>
             <li>⏱️ {job.duration}</li>
-            <li>🗓️ Đăng: {fmtDate(job.postedAt)}</li>
+            <li>🗓️ {t('jobDetailPage_postedOn')}{fmtDate(job.postedAt)}</li>
           </ul>
           <div className="mt-4 flex gap-2">
             <button
               onClick={() => navigate("/chat")}
               className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm hover:bg-slate-50"
             >
-              Liên hệ
+              {t('jobDetailPage_contact')}
             </button>
             {job.status === "closed" ? (
-              <button disabled className="flex-1 cursor-not-allowed rounded-xl bg-slate-200 px-4 py-2 text-center text-sm font-semibold text-slate-500">Đã đóng</button>
+              <button disabled className="flex-1 cursor-not-allowed rounded-xl bg-slate-200 px-4 py-2 text-center text-sm font-semibold text-slate-500">{t('jobTable_action_closed')}</button>
             ) : isApplied ? (
-              <span className="flex-1 rounded-xl bg-slate-200 px-4 py-2 text-center text-sm font-semibold text-slate-700">Đã ứng tuyển</span>
+              <span className="flex-1 rounded-xl bg-slate-200 px-4 py-2 text-center text-sm font-semibold text-slate-700">{t('jobTable_action_applied')}</span>
             ) : (
-              <button onClick={onApply} className="flex-1 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:brightness-110">Ứng tuyển</button>
+              <button onClick={onApply} className="flex-1 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:brightness-110">{t('jobTable_action_apply')}</button>
             )}
           </div>
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 className="mb-3 text-base font-semibold">Vị trí</h3>
+          <h3 className="mb-3 text-base font-semibold">{t('jobDetailPage_location')}</h3>
           <div className="aspect-video w-full rounded-xl bg-slate-200" />
         </div>
       </aside>
@@ -557,12 +574,13 @@ function SeekerJobDetailPage({
 
 /* ============================ Helpers ============================ */
 function Placeholder({ title, onBack }: { title: string; onBack: () => void }) {
+  const { t } = useTranslation();
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
       <h2 className="mb-2 text-xl font-bold">{title}</h2>
-      <p className="mb-4 text-slate-600">Trang này là placeholder cho demo routing.</p>
+      <p className="mb-4 text-slate-600">{t('placeholder_desc')}</p>
       <button onClick={onBack} className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:brightness-110">
-        Quay lại Danh sách công việc
+        {t('placeholder_backButton')}
       </button>
     </div>
   );

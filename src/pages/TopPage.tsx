@@ -9,6 +9,7 @@ import {
 import { Footer } from "../components/Footer";
 import { Header } from "../components/Header";
 import { Link } from "react-router-dom";
+import { useTranslation, Trans } from 'react-i18next';
 
 /**
  * TOP (Home) Page – Modern UI (React + TailwindCSS)
@@ -21,6 +22,8 @@ import { Link } from "react-router-dom";
  */
 
 export default function TopPage() {
+  const { t } = useTranslation();
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 antialiased">
       <Header variant="guest" />
@@ -34,12 +37,16 @@ export default function TopPage() {
           {/* Text block */}
           <div>
             <h1 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
-              Kết nối nhanh giữa <span className="text-blue-600">Người tìm việc</span> &{" "}
-              <span className="text-blue-600">Người đăng việc</span> trong ngành Drone
+              <Trans
+                i18nKey="hero_title"
+                components={{
+                  seeker: <span className="text-blue-600" />,
+                  poster: <span className="text-blue-600" />,
+                }}
+              />
             </h1>
             <p className="mb-8 max-w-prose text-slate-600">
-              Tìm việc hoặc đăng việc dễ dàng – nền tảng chuyên biệt cho ngành xây dựng và hơn thế nữa.
-              Hãy bắt đầu từ hôm nay và mở rộng cơ hội hợp tác của bạn.
+              {t('hero_subtitle')}
             </p>
 
             {/* CTA đôi: Đăng ký (primary) + Tìm việc (secondary) */}
@@ -48,20 +55,20 @@ export default function TopPage() {
                 to="/login"
                 className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:brightness-110"
               >
-                Đăng ký ngay
+                {t('register_now')}
               </Link>
               <Link
                 to="/login"
                 className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
               >
-                Tìm việc ngay
+                {t('find_job_now')}
               </Link>
             </div>
           </div>
 
           {/* Hình minh họa */}
           <div className="relative">
-            <img src="/illustration.svg" alt="Illustration" className="w-full rounded-3xl shadow-xl shadow-slate-900/5" />
+            <img src="/illustration.svg" alt={t('illustration_alt')} className="w-full rounded-3xl shadow-xl shadow-slate-900/5" />
           </div>
         </div>
       </section>
@@ -70,7 +77,7 @@ export default function TopPage() {
       {/* 3 bước: Đăng ký → Đăng bài/Ứng tuyển → Nhắn tin & hợp tác */}
       <section className="mx-auto max-w-6xl px-4 py-12 lg:py-16" aria-labelledby="how-it-works">
         <h2 id="how-it-works" className="mb-6 text-2xl font-bold tracking-tight">
-          Cách hoạt động
+          {t('how_it_works')}
         </h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {/* Bước 1 */}
@@ -78,9 +85,9 @@ export default function TopPage() {
             <div className="mb-3 grid h-10 w-10 place-items-center rounded-xl bg-blue-600/10 ring-1 ring-blue-600/20">
               <UserPlus className="h-5 w-5 text-blue-600" aria-hidden="true" />
             </div>
-            <h3 className="mb-1 font-semibold">Đăng ký tài khoản</h3>
+            <h3 className="mb-1 font-semibold">{t('step1_title')}</h3>
             <p className="text-sm text-slate-600">
-              Chọn vai trò phù hợp: Người đăng việc hoặc Người nhận việc.
+              {t('step1_desc')}
             </p>
           </div>
           {/* Bước 2 */}
@@ -88,9 +95,9 @@ export default function TopPage() {
             <div className="mb-3 grid h-10 w-10 place-items-center rounded-xl bg-blue-600/10 ring-1 ring-blue-600/20">
               <BriefcaseBusiness className="h-5 w-5 text-blue-600" aria-hidden="true" />
             </div>
-            <h3 className="mb-1 font-semibold">Đăng bài / Ứng tuyển</h3>
+            <h3 className="mb-1 font-semibold">{t('step2_title')}</h3>
             <p className="text-sm text-slate-600">
-              Người đăng việc tạo dự án; Người nhận việc nộp hồ sơ phù hợp.
+              {t('step2_desc')}
             </p>
           </div>
           {/* Bước 3 */}
@@ -98,9 +105,9 @@ export default function TopPage() {
             <div className="mb-3 grid h-10 w-10 place-items-center rounded-xl bg-blue-600/10 ring-1 ring-blue-600/20">
               <MessageSquareText className="h-5 w-5 text-blue-600" aria-hidden="true" />
             </div>
-            <h3 className="mb-1 font-semibold">Trao đổi & hợp tác</h3>
+            <h3 className="mb-1 font-semibold">{t('step3_title')}</h3>
             <p className="text-sm text-slate-600">
-              Nhắn tin trực tiếp, chốt thỏa thuận và bắt đầu công việc.
+              {t('step3_desc')}
             </p>
           </div>
         </div>
@@ -110,7 +117,7 @@ export default function TopPage() {
       {/* 3 lợi ích nổi bật, dùng icon/illus nhẹ, card bo góc + shadow mềm */}
       <section className="mx-auto max-w-6xl px-4 py-12 lg:py-16" aria-labelledby="features">
         <h2 id="features" className="mb-6 text-2xl font-bold tracking-tight">
-          Lợi ích nổi bật
+          {t('features')}
         </h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="group flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md">
@@ -118,9 +125,9 @@ export default function TopPage() {
               <Search className="h-4 w-4 text-blue-600" aria-hidden="true" />
             </div>
             <div>
-              <h3 className="font-semibold">Tìm kiếm nhanh chóng</h3>
+              <h3 className="font-semibold">{t('feature_search_title')}</h3>
               <p className="text-sm text-slate-600">
-                Bộ lọc thông minh, đề xuất phù hợp theo kỹ năng & kinh nghiệm.
+                {t('feature_search_desc')}
               </p>
             </div>
           </div>
@@ -130,9 +137,9 @@ export default function TopPage() {
               <ClipboardList className="h-4 w-4 text-blue-600" aria-hidden="true" />
             </div>
             <div>
-              <h3 className="font-semibold">Quản lý hồ sơ dễ dàng</h3>
+              <h3 className="font-semibold">{t('feature_profile_title')}</h3>
               <p className="text-sm text-slate-600">
-                Cập nhật thông tin, lưu công việc yêu thích, theo dõi trạng thái.
+                {t('feature_profile_desc')}
               </p>
             </div>
           </div>
@@ -142,9 +149,9 @@ export default function TopPage() {
               <MessageCircle className="h-4 w-4 text-blue-600" aria-hidden="true" />
             </div>
             <div>
-              <h3 className="font-semibold">Nhắn tin trực tiếp</h3>
+              <h3 className="font-semibold">{t('feature_messaging_title')}</h3>
               <p className="text-sm text-slate-600">
-                Kết nối nhanh giữa đôi bên để làm rõ yêu cầu và thời gian.
+                {t('feature_messaging_desc')}
               </p>
             </div>
           </div>
@@ -155,22 +162,22 @@ export default function TopPage() {
       {/* Kêu gọi hành động cuối trang, nền accent để tương phản */}
       <section className="mx-auto max-w-6xl px-4 pb-14">
         <div className="rounded-3xl bg-blue-600 px-6 py-10 text-center text-white shadow-lg">
-          <h2 className="mb-3 text-2xl font-bold tracking-tight">Sẵn sàng tham gia?</h2>
+          <h2 className="mb-3 text-2xl font-bold tracking-tight">{t('cta_title')}</h2>
           <p className="mx-auto mb-6 max-w-2xl text-blue-50">
-            Tham gia DroneWork để bắt đầu đăng dự án hoặc tìm cơ hội phù hợp ngay.
+            {t('cta_subtitle')}
           </p>
           <div className="flex flex-col justify-center gap-3 sm:flex-row">
             <Link
               to="/login"
               className="inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-semibold text-black shadow-sm transition hover:brightness-95"
             >
-              Bắt đầu tìm việc
+              {t('start_finding_job')}
             </Link>
             <Link
               to="/login"
               className="inline-flex items-center justify-center rounded-xl border border-white/80 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
             >
-              Đăng dự án ngay
+              {t('post_project_now')}
             </Link>
           </div>
         </div>

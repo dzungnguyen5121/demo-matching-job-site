@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Header } from "../components/Header";
 import { useAuth } from "../contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 
 /* =============================================================================
    Types (rút gọn cho MVP chat)
@@ -42,13 +43,13 @@ const uid = () =>
     ? crypto.randomUUID()
     : `id_${Date.now()}_${Math.random().toString(16).slice(2)}`);
 
-const MOCK_CONVS: Conversation[] = [
+const MOCK_CONVS_DATA: Conversation[] = [
   {
     id: "c1",
     jobId: "JOB-123",
-    jobTitle: "Khảo sát mái nhà bằng drone",
+    jobTitle: "mock_job_1_title",
     peer: { id: "uPoster1", name: "Dronex Co.", role: "poster", online: true },
-    lastMessage: "Hẹn bạn chiều mai nhé?",
+    lastMessage: "chat_mock_conv1_lastMessage",
     lastAt: new Date(Date.now() - 1000 * 60 * 20).toISOString(),
     unreadCount: 2,
     pinned: true,
@@ -56,46 +57,46 @@ const MOCK_CONVS: Conversation[] = [
   {
     id: "c2",
     jobId: "JOB-207",
-    jobTitle: "Lập bản đồ hiện trạng công trường",
+    jobTitle: "mock_job_2_title",
     peer: { id: "uPoster2", name: "BuildPro", role: "poster", online: false },
-    lastMessage: "Tôi đã nhận tài liệu",
+    lastMessage: "chat_mock_conv2_lastMessage",
     lastAt: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
     unreadCount: 0,
   },
   {
     id: "c3",
     jobId: "JOB-404",
-    jobTitle: "Quay video công trình tiến độ",
+    jobTitle: "seekerhub_mock_prg201_title",
     peer: { id: "uPoster3", name: "Vision Studio", role: "poster", online: false },
-    lastMessage: "Tôi cần thêm ví dụ video",
+    lastMessage: "chat_mock_conv3_lastMessage",
     lastAt: new Date(Date.now() - 1000 * 60 * 60 * 26).toISOString(),
     unreadCount: 1,
   },
 ];
 
-const MOCK_MSGS: Message[] = [
-  { id: uid(), convId: "c1", senderId: "uPoster1", type: "text", text: "Chào bạn! Dự án mái nhà tuần này OK chứ?", status: "read", createdAt: new Date(Date.now() - 1000 * 60 * 50).toISOString() },
-  { id: uid(), convId: "c1", senderId: "seeker@email.com",        type: "text", text: "Chào anh, em sẵn sàng ạ!", status: "read", createdAt: new Date(Date.now() - 1000 * 60 * 35).toISOString() },
-  { id: uid(), convId: "c1", senderId: "uPoster1", type: "text", text: "Hẹn bạn chiều mai nhé?", status: "delivered", createdAt: new Date(Date.now() - 1000 * 60 * 20).toISOString() },
+const MOCK_MSGS_DATA: Message[] = [
+  { id: uid(), convId: "c1", senderId: "uPoster1", type: "text", text: "chat_mock_msg1_text", status: "read", createdAt: new Date(Date.now() - 1000 * 60 * 50).toISOString() },
+  { id: uid(), convId: "c1", senderId: "seeker@email.com",        type: "text", text: "chat_mock_msg2_text", status: "read", createdAt: new Date(Date.now() - 1000 * 60 * 35).toISOString() },
+  { id: uid(), convId: "c1", senderId: "uPoster1", type: "text", text: "chat_mock_conv1_lastMessage", status: "delivered", createdAt: new Date(Date.now() - 1000 * 60 * 20).toISOString() },
 
-  { id: uid(), convId: "c2", senderId: "seeker@email.com",        type: "text", text: "Đã gửi mẫu DEM/DSM.", status: "read", createdAt: new Date(Date.now() - 1000 * 60 * 190).toISOString() },
-  { id: uid(), convId: "c2", senderId: "uPoster2", type: "text", text: "Tôi đã nhận tài liệu", status: "read", createdAt: new Date(Date.now() - 1000 * 60 * 180).toISOString() },
+  { id: uid(), convId: "c2", senderId: "seeker@email.com",        type: "text", text: "chat_mock_msg4_text", status: "read", createdAt: new Date(Date.now() - 1000 * 60 * 190).toISOString() },
+  { id: uid(), convId: "c2", senderId: "uPoster2", type: "text", text: "chat_mock_conv2_lastMessage", status: "read", createdAt: new Date(Date.now() - 1000 * 60 * 180).toISOString() },
 
-  { id: uid(), convId: "c3", senderId: "uPoster3", type: "text", text: "Tôi cần thêm ví dụ video", status: "delivered", createdAt: new Date(Date.now() - 1000 * 60 * 60 * 26).toISOString() },
+  { id: uid(), convId: "c3", senderId: "uPoster3", type: "text", text: "chat_mock_conv3_lastMessage", status: "delivered", createdAt: new Date(Date.now() - 1000 * 60 * 60 * 26).toISOString() },
 ];
 
 /* =============================================================================
    Utils
 ============================================================================= */
-function timeAgo(iso: string) {
+function timeAgo(iso: string, t: (key: string, options?: any) => string) {
   const diff = Date.now() - new Date(iso).getTime();
   const m = Math.floor(diff / 60000);
-  if (m < 1) return "vừa xong";
-  if (m < 60) return `${m} phút`;
+  if (m < 1) return t('chat_timeAgo_justNow');
+  if (m < 60) return t('chat_timeAgo_minutes', { count: m });
   const h = Math.floor(m / 60);
-  if (h < 24) return `${h} giờ`;
+  if (h < 24) return t('chat_timeAgo_hours', { count: h });
   const d = Math.floor(h / 24);
-  return `${d} ngày`;
+  return t('chat_timeAgo_days', { count: d });
 }
 function isSameDay(a: string, b: string) {
   const da = new Date(a), db = new Date(b);
@@ -108,6 +109,7 @@ function isSameDay(a: string, b: string) {
 function ConversationItem({
   conv, active, onClick,
 }: { conv: Conversation; active: boolean; onClick: () => void }) {
+  const { t } = useTranslation();
   return (
     <button
       onClick={onClick}
@@ -125,13 +127,13 @@ function ConversationItem({
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
             <div className="truncate text-sm font-semibold">{conv.peer.name}</div>
-            <div className="shrink-0 text-xs text-slate-500">{timeAgo(conv.lastAt)}</div>
+            <div className="shrink-0 text-xs text-slate-500">{timeAgo(conv.lastAt, t)}</div>
           </div>
           <div className="mt-0.5 flex items-center gap-2 text-xs text-slate-500">
             <span className="truncate rounded-full bg-blue-50 px-2 py-0.5 text-blue-700 ring-1 ring-blue-600/20">
               {conv.jobTitle}
             </span>
-            {conv.pinned && <span title="Đã ghim">⭐</span>}
+            {conv.pinned && <span title={t('star_icon_alt')}>⭐</span>}
           </div>
           <div className="mt-1 flex items-center justify-between">
             <div className="truncate text-sm text-slate-600">{conv.lastMessage}</div>
@@ -155,16 +157,17 @@ function ConversationList({
   setActiveId: (id: string) => void;
   onSearch: (q: string) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <aside className="w-full sm:w-80 shrink-0 border-r border-slate-200 bg-slate-50">
       <div className="p-3">
         <div className="relative">
           <input
             onChange={(e) => onSearch(e.target.value)}
-            placeholder="Tìm theo tên, job, nội dung…"
+            placeholder={t('chat_search_placeholder')}
             className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-sm outline-none ring-4 ring-transparent placeholder:text-slate-400 focus:border-blue-600 focus:ring-blue-600/20"
           />
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" title={t('search_icon_alt')}>🔍</span>
         </div>
       </div>
       <div className="space-y-2 overflow-y-auto p-3" style={{ maxHeight: "calc(100vh - 16rem)" }}>
@@ -173,7 +176,7 @@ function ConversationList({
         ))}
         {conversations.length === 0 && (
           <div className="mt-6 rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-500">
-            Không có hội thoại nào.
+            {t('chat_empty_list')}
           </div>
         )}
       </div>
@@ -187,6 +190,7 @@ function ConversationList({
 function Bubble({
   mine, msg,
 }: { mine: boolean; msg: Message }) {
+  const { t, i18n } = useTranslation();
   return (
     <div className={`flex ${mine ? "justify-end" : "justify-start"}`}>
       <div
@@ -196,8 +200,8 @@ function Bubble({
       >
         <div className="whitespace-pre-wrap break-words">{msg.text}</div>
         <div className={`mt-1 text-[10px] ${mine ? "text-blue-100" : "text-slate-400"}`}>
-          {new Date(msg.createdAt).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}{" "}
-          {mine && (msg.status === "read" ? "✓✓" : msg.status === "delivered" ? "✓✓" : "✓")}
+          {new Date(msg.createdAt).toLocaleTimeString(i18n.language, { hour: "2-digit", minute: "2-digit" })}{" "}
+          {mine && (msg.status === "read" ? t('chat_bubble_status_read') : msg.status === "delivered" ? t('chat_bubble_status_delivered') : t('chat_bubble_status_sent'))}
         </div>
       </div>
     </div>
@@ -205,8 +209,9 @@ function Bubble({
 }
 
 function DayDivider({ iso }: { iso: string }) {
+  const { i18n } = useTranslation();
   const d = new Date(iso);
-  const label = d.toLocaleDateString("vi-VN", { weekday: "short", day: "2-digit", month: "2-digit" });
+  const label = d.toLocaleDateString(i18n.language, { weekday: "short", day: "2-digit", month: "2-digit" });
   return (
     <div className="my-4 flex items-center gap-3">
       <div className="h-px flex-1 bg-slate-200" />
@@ -220,12 +225,13 @@ function Composer({
   onSend, disabled,
 }: { onSend: (text: string) => void; disabled?: boolean }) {
   const [text, setText] = useState("");
+  const { t } = useTranslation();
 
   return (
     <div className="border-t border-slate-200 bg-white p-3">
       <div className="flex items-end gap-2">
         {/* Nút đính kèm (chưa xử lý file trong MVP) */}
-        <button className="grid h-10 w-10 place-items-center rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50" title="Đính kèm" disabled={disabled}>📎</button>
+        <button className="grid h-10 w-10 place-items-center rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50" title={t('attachment_icon_alt')} disabled={disabled}>📎</button>
         <textarea
           rows={1}
           value={text}
@@ -241,7 +247,7 @@ function Composer({
               }
             }
           }}
-          placeholder="Viết tin nhắn… (Enter để gửi, Shift+Enter xuống dòng)"
+          placeholder={t('chat_composer_placeholder')}
           className="min-h-[40px] max-h-40 flex-1 resize-y rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none ring-4 ring-transparent placeholder:text-slate-400 focus:border-blue-600 focus:ring-blue-600/20 disabled:bg-slate-100"
         />
         <button
@@ -249,7 +255,7 @@ function Composer({
           disabled={disabled || !text.trim()}
           className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:brightness-110 disabled:opacity-50"
         >
-          Gửi
+          {t('chat_composer_send')}
         </button>
       </div>
     </div>
@@ -266,6 +272,7 @@ function ChatThread({
   myRole: Role;
 }) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
+  const { t } = useTranslation();
 
   // Cuộn xuống cuối mỗi khi đổi thread hoặc có tin nhắn mới
   useEffect(() => {
@@ -298,8 +305,8 @@ function ChatThread({
       <section className="flex-1 bg-slate-100">
         <div className="grid h-full place-items-center p-6 text-center text-slate-500">
           <div>
-            <div className="mb-2 text-5xl">💬</div>
-            <div className="text-sm">Chọn một hội thoại ở bên trái để bắt đầu.</div>
+            <div className="mb-2 text-5xl" title={t('chat_icon_alt')}>💬</div>
+            <div className="text-sm">{t('chat_thread_empty_prompt')}</div>
           </div>
         </div>
       </section>
@@ -315,16 +322,16 @@ function ChatThread({
             {conversation.peer.name.charAt(0)}
           </div>
           <div>
-            <div className="text-sm font-semibold">{conversation.peer.name} <span className="text-xs text-slate-500">({conversation.peer.role})</span></div>
+            <div className="text-sm font-semibold">{conversation.peer.name} <span className="text-xs text-slate-500">{t('user_role_parens', { role: conversation.peer.role })}</span></div>
             <div className="mt-0.5 text-xs text-slate-600">
               <span className="rounded-full bg-blue-50 px-2 py-0.5 text-blue-700 ring-1 ring-blue-600/20">{conversation.jobTitle}</span>
             </div>
           </div>
         </div>
         <div className="flex items-center gap-2 text-sm">
-          <button className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 hover:bg-slate-50">Xem hồ sơ</button>
-          <button className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 hover:bg-slate-50">Xem Job</button>
-          <button className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 hover:bg-slate-50">More</button>
+          <button className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 hover:bg-slate-50">{t('chat_header_viewProfile')}</button>
+          <button className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 hover:bg-slate-50">{t('chat_header_viewJob')}</button>
+          <button className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 hover:bg-slate-50">{t('chat_header_more')}</button>
         </div>
       </div>
 
@@ -355,9 +362,21 @@ function ChatThread({
 ============================================================================= */
 export default function App() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   // State hội thoại & tin nhắn (mock)
-  const [convs, setConvs] = useState<Conversation[]>(MOCK_CONVS);
-  const [msgs, setMsgs] = useState<Message[]>(MOCK_MSGS);
+  const initialConvs = useMemo(() => MOCK_CONVS_DATA.map(c => ({ ...c, jobTitle: t(c.jobTitle), lastMessage: t(c.lastMessage) })), [t]);
+  const initialMsgs = useMemo(() => MOCK_MSGS_DATA.map(m => ({ ...m, text: t(m.text) })), [t]);
+
+  const [convs, setConvs] = useState<Conversation[]>(initialConvs);
+  const [msgs, setMsgs] = useState<Message[]>(initialMsgs);
+
+  useEffect(() => {
+    setConvs(initialConvs);
+  }, [initialConvs]);
+
+  useEffect(() => {
+    setMsgs(initialMsgs);
+  }, [initialMsgs]);
 
   // Chọn thread hiện tại
   const [activeId, setActiveId] = useState<string | undefined>(convs[0]?.id);

@@ -5,6 +5,7 @@ import { Footer } from "../components/Footer";
 import { Header } from "../components/Header";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 
 /* ============================================================================
    Types
@@ -38,99 +39,99 @@ interface Applicant {
 /* ============================================================================
    Mock data
 ============================================================================ */
-const APPLICANTS_MOCK: Applicant[] = [
+const APPLICANTS_MOCK_DATA: Applicant[] = [
   {
     id: "cand-001",
-    name: "Nguyễn Minh Khôi",
+    name: "joblist_mock_applicant1_name",
     initials: "MK",
     age: 29,
     yearsExp: 4,
-    fields: ["Khảo sát", "Photogrammetry", "RTK"],
-    location: "Hà Nội",
+    fields: ["applicant_mock_field_survey", "applicant_mock_field_photogrammetry", "applicant_mock_field_rtk"],
+    location: "hanoi",
     appliedAt: new Date(Date.now() - 2 * 864e5).toISOString(),
     status: "pending",
-    summary: "Phi công drone có kinh nghiệm lập bản đồ hiện trạng và xử lý ảnh Metashape/Pix4D.",
+    summary: "applicant_mock_summary1",
     workHistory: [
       {
         id: "we1",
         time: { start: "2023-01-01", end: "2024-10-01" },
-        title: "Drone Survey Pilot",
-        org: "Công ty Xây dựng A",
-        description: "Phụ trách bay khảo sát công trình và dựng orthophoto + DEM.",
+        title: "applicant_mock_work_title1",
+        org: "applicant_mock_work_org1",
+        description: "applicant_mock_work_desc1",
         highlights: [
-          "Triển khai 25+ dự án khảo sát hạ tầng",
-          "Thiết lập GCP & RTK; độ chính xác ≤ 2cm",
+          "applicant_mock_highlight1a",
+          "applicant_mock_highlight1b",
         ],
       },
       {
         id: "we2",
         time: { start: "2021-03-01", end: "2022-12-01" },
-        title: "UAV Operator (Freelance)",
-        org: "Nhiều dự án tự do",
-        highlights: ["Bảo hiểm nhà ở, kiểm tra mái", "Báo cáo PDF + GeoTIFF"],
+        title: "applicant_mock_work_title2",
+        org: "applicant_mock_work_org2",
+        highlights: ["applicant_mock_highlight2a", "applicant_mock_highlight2b"],
       },
     ],
   },
   {
     id: "cand-002",
-    name: "Trần Bảo Anh",
+    name: "joblist_mock_applicant2_name",
     initials: "BA",
     age: 33,
     yearsExp: 7,
-    fields: ["Kiểm định", "Telephoto", "An toàn bay"],
-    location: "Đà Nẵng",
+    fields: ["applicant_mock_field_inspection", "applicant_mock_field_telephoto", "applicant_mock_field_safety"],
+    location: "danang",
     appliedAt: new Date(Date.now() - 1 * 864e5).toISOString(),
     status: "pending",
-    summary: "Chuyên kiểm định cột điện, đường dây, kinh nghiệm tiêu chuẩn an toàn nội bộ.",
+    summary: "applicant_mock_summary2",
     workHistory: [
       {
         id: "we3",
         time: { start: "2022-05-01" },
-        title: "Senior Inspection Pilot",
-        org: "EVN Partners",
-        highlights: ["Tuyến 15km/tuần", "Checklists & telephoto lens (7×)"],
+        title: "applicant_mock_work_title3",
+        org: "applicant_mock_work_org3",
+        highlights: ["applicant_mock_highlight3a", "applicant_mock_highlight3b"],
       },
     ],
   },
   {
     id: "cand-003",
-    name: "Phạm Hải Yến",
+    name: "joblist_mock_applicant3_name",
     initials: "HY",
     age: 27,
     yearsExp: 3,
-    fields: ["Chụp ảnh", "Editing", "Video"],
-    location: "TP.HCM",
+    fields: ["applicant_mock_field_photography", "applicant_mock_field_editing", "applicant_mock_field_video"],
+    location: "hochiminh_city",
     appliedAt: new Date(Date.now() - 5 * 864e5).toISOString(),
     status: "approved",
-    summary: "Quay/chụp công trình định kỳ, dựng clip 60–90s cho báo cáo tiến độ.",
+    summary: "applicant_mock_summary3",
     workHistory: [
       {
         id: "we4",
         time: { start: "2021-01-01", end: "2023-08-01" },
-        title: "Aerial Videographer",
-        org: "Studio Drone B",
-        highlights: ["10+ clip monthly", "Workflow Premiere + Resolve"],
+        title: "applicant_mock_work_title4",
+        org: "applicant_mock_work_org4",
+        highlights: ["applicant_mock_highlight4a", "applicant_mock_highlight4b"],
       },
     ],
   },
   {
     id: "cand-004",
-    name: "Lê Quang Huy",
+    name: "joblist_mock_applicant4_name",
     initials: "QH",
     age: 31,
     yearsExp: 6,
-    fields: ["Lập bản đồ", "GCP", "DEM"],
-    location: "Cần Thơ",
+    fields: ["applicant_mock_field_mapping", "applicant_mock_field_gcp", "applicant_mock_field_dem"],
+    location: "cantho",
     appliedAt: new Date(Date.now() - 9 * 864e5).toISOString(),
     status: "rejected",
-    summary: "Tập trung lập bản đồ địa hình nông nghiệp, pipeline xử lý ảnh tự động.",
+    summary: "applicant_mock_summary4",
     workHistory: [
       {
         id: "we5",
         time: { start: "2019-06-01" },
-        title: "Geospatial Specialist",
-        org: "AgriMap Co.",
-        highlights: ["NDVI, DSM/DTM", "Kết nối QGIS"],
+        title: "applicant_mock_work_title5",
+        org: "applicant_mock_work_org5",
+        highlights: ["applicant_mock_highlight5a", "applicant_mock_highlight5b"],
       },
     ],
   },
@@ -139,14 +140,13 @@ const APPLICANTS_MOCK: Applicant[] = [
 /* ============================================================================
    Small helpers & UI atoms
 ============================================================================ */
-const fmtDate = (iso?: string) => (iso ? new Date(iso).toLocaleDateString("vi-VN") : "—");
-
 function StatusBadge({ s }: { s: ApplicantStatus }) {
+  const { t } = useTranslation();
   if (s === "approved")
-    return <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">Đã duyệt</span>;
+    return <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">{t('applicant_status_approved')}</span>;
   if (s === "rejected")
-    return <span className="rounded-full bg-rose-100 px-2.5 py-1 text-xs font-medium text-rose-700">Từ chối</span>;
-  return <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700">Chờ duyệt</span>;
+    return <span className="rounded-full bg-rose-100 px-2.5 py-1 text-xs font-medium text-rose-700">{t('applicant_status_rejected')}</span>;
+  return <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700">{t('applicant_status_pending')}</span>;
 }
 
 function Chip({ children }: { children: React.ReactNode }) {
@@ -181,6 +181,15 @@ function ApplicantModal({
   onReject: (id: string) => void;
 }) {
   const [newStatus, setNewStatus] = useState<ApplicantStatus | null>(null);
+  const { t, i18n } = useTranslation();
+  const fmtDate = (iso?: string) =>
+    iso
+      ? new Date(iso).toLocaleDateString(i18n.language, {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        })
+      : "—";
 
   // Reset trạng thái đang chờ xác nhận khi applicant thay đổi
   useEffect(() => {
@@ -226,8 +235,7 @@ function ApplicantModal({
             <div>
               <div className="text-base font-semibold">{applicant.name}</div>
               <div className="mt-1.5 rounded-lg bg-slate-100 p-2 text-center text-sm text-slate-800">
-                {applicant.age} tuổi &bull; {applicant.yearsExp} năm kinh nghiệm &bull; Ứng tuyển ngày{" "}
-                {fmtDate(applicant.appliedAt)}
+                {t('applicantModal_info', { age: applicant.age, exp: applicant.yearsExp, date: fmtDate(applicant.appliedAt) })}
               </div>
             </div>
           </div>
@@ -248,17 +256,17 @@ function ApplicantModal({
           {/* Left meta */}
           <div className="sm:col-span-1 space-y-4">
             <div>
-              <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Lĩnh vực</div>
+              <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">{t('applicantModal_fields')}</div>
               <div className="flex flex-wrap gap-2">
                 {applicant.fields.map((f) => <Chip key={f}>{f}</Chip>)}
               </div>
             </div>
             {applicant.location && (
-              <div className="text-sm text-slate-600">📍 {applicant.location}</div>
+              <div className="text-sm text-slate-600">{t('applicantModal_location', { location: applicant.location })}</div>
             )}
             {applicant.summary && (
               <div className="text-sm text-slate-700">
-                <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Giới thiệu</div>
+                <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">{t('applicantModal_summary')}</div>
                 {applicant.summary}
               </div>
             )}
@@ -266,7 +274,7 @@ function ApplicantModal({
 
           {/* Right timeline */}
           <div className="sm:col-span-2">
-            <div className="mb-3 text-sm font-semibold">Lịch sử làm việc</div>
+            <div className="mb-3 text-sm font-semibold">{t('applicantModal_workHistory')}</div>
             <ol className="relative ml-3 border-l border-slate-200">
               {applicant.workHistory.map((w) => (
                 <li key={w.id} className="mb-5 ml-4">
@@ -274,7 +282,7 @@ function ApplicantModal({
                   <div className="flex items-center justify-between gap-2">
                     <div className="text-sm font-semibold">{w.title}</div>
                     <div className="text-xs text-slate-500">
-                      {fmtDate(w.time.start)} – {w.time.end ? fmtDate(w.time.end) : "Hiện tại"}
+                      {fmtDate(w.time.start)} – {w.time.end ? fmtDate(w.time.end) : t('applicantModal_present')}
                     </div>
                   </div>
                   <div className="text-sm text-slate-600">{w.org}</div>
@@ -292,7 +300,7 @@ function ApplicantModal({
 
         {/* Footer actions in modal */}
         <div className="flex items-center justify-between gap-3 border-t border-slate-200 px-5 py-4">
-          <div className="text-xs text-slate-500">ID: {applicant.id}</div>
+          <div className="text-xs text-slate-500">{t('applicant_id_prefix')}{applicant.id}</div>
 
           {!newStatus ? (
           <div className="flex items-center gap-2">
@@ -300,23 +308,23 @@ function ApplicantModal({
                 onClick={() => setNewStatus("rejected")}
                 className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-100"
             >
-              Từ chối
+              {t('applicantModal_reject')}
             </button>
             <button
                 onClick={() => setNewStatus("approved")}
                 className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
             >
-              Phê duyệt
+              {t('applicantModal_approve')}
             </button>
           </div>
           ) : (
             <div className="flex items-center gap-3">
-              <span className="text-sm font-medium">Bạn chắc chắn chứ?</span>
+              <span className="text-sm font-medium">{t('applicantModal_confirm_title')}</span>
               <button
                 onClick={() => setNewStatus(null)}
                 className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm hover:bg-slate-50"
               >
-                Hủy
+                {t('applicantModal_confirm_cancel')}
               </button>
               <button
                 onClick={handleConfirm}
@@ -326,7 +334,7 @@ function ApplicantModal({
                     : "bg-rose-600 hover:bg-rose-700"
                 }`}
               >
-                Xác nhận
+                {t('applicantModal_confirm_confirm')}
               </button>
             </div>
           )}
@@ -341,10 +349,40 @@ function ApplicantModal({
 ============================================================================ */
 function ApplicantsListPage() {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  const fmtDate = (iso?: string) =>
+    iso
+      ? new Date(iso).toLocaleDateString(i18n.language, {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        })
+      : t('no_date_placeholder');
+
+  const APPLICANTS_MOCK = useMemo(() => APPLICANTS_MOCK_DATA.map(a => ({
+    ...a,
+    name: t(a.name),
+    fields: a.fields.map(f => t(f)),
+    location: t(a.location || ''),
+    summary: t(a.summary || ''),
+    workHistory: a.workHistory.map(w => ({
+      ...w,
+      title: t(w.title),
+      org: t(w.org),
+      description: t(w.description || ''),
+      highlights: w.highlights?.map(h => t(h))
+    }))
+  })), [t]);
+
   const [applicants, setApplicants] = useState<Applicant[]>(APPLICANTS_MOCK);
+  
+  useEffect(() => {
+    setApplicants(APPLICANTS_MOCK);
+  }, [APPLICANTS_MOCK]);
+
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | ApplicantStatus>("all");
-
+  
   // Modal state
   const [openModal, setOpenModal] = useState(false);
   const [selected, setSelected] = useState<Applicant | undefined>(undefined);
@@ -406,19 +444,19 @@ function ApplicantsListPage() {
         <button
           onClick={() => navigate("/poster/jobs")}
           className="grid h-12 w-12 flex-shrink-0 place-items-center rounded-full bg-white text-slate-800 shadow-md ring-1 ring-slate-900/5 transition hover:shadow-lg"
-          title="Quay lại danh sách"
+          title={t('applicantList_back')}
         >
           <ArrowLeft size={24} />
         </button>
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-            Ứng viên cho công việc
+            {t('applicantList_title')}
           </h1>
           <p className="mt-1 text-lg font-semibold text-blue-600">
-            Khảo sát mái nhà bằng drone – Quận 1
+            {t('applicantList_jobTitle_placeholder')}
           </p>
           <p className="mt-4 text-base text-slate-600">
-            <span className="font-bold text-slate-800">{filtered.length}</span> ứng viên
+            <span className="font-bold text-slate-800">{t('applicantList_applicantCount', { count: filtered.length })}</span>
           </p>
         </div>
       </div>
@@ -427,12 +465,12 @@ function ApplicantsListPage() {
       <div className="mb-6 grid grid-cols-1 gap-3 md:grid-cols-3">
         <div className="relative md:col-span-2">
           <input
-            placeholder="Tìm theo tên, lĩnh vực, địa điểm…"
+            placeholder={t('applicantList_search_placeholder')}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-sm outline-none ring-4 ring-transparent placeholder:text-slate-400 focus:border-blue-600 focus:ring-blue-600/20"
           />
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" title={t('search_icon_alt')}>🔍</span>
         </div>
 
         <select
@@ -440,10 +478,10 @@ function ApplicantsListPage() {
           onChange={(e) => setStatusFilter(e.target.value as any)}
           className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm focus:border-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-600/20"
         >
-          <option value="all">Tất cả ({counts.all})</option>
-          <option value="pending">Chờ duyệt ({counts.pending})</option>
-          <option value="approved">Đã duyệt ({counts.approved})</option>
-          <option value="rejected">Từ chối ({counts.rejected})</option>
+          <option value="all">{t('applicantList_filter_all', { count: counts.all })}</option>
+          <option value="pending">{t('applicantList_filter_pending', { count: counts.pending })}</option>
+          <option value="approved">{t('applicantList_filter_approved', { count: counts.approved })}</option>
+          <option value="rejected">{t('applicantList_filter_rejected', { count: counts.rejected })}</option>
         </select>
       </div>
 
@@ -452,13 +490,13 @@ function ApplicantsListPage() {
         <table className="w-full text-left text-sm">
           <thead className="bg-slate-50 text-slate-600">
             <tr>
-              <th className="px-4 py-3 font-semibold">Ứng viên</th>
-              <th className="px-4 py-3 font-semibold">Lĩnh vực</th>
-              <th className="px-4 py-3 font-semibold">Kinh nghiệm</th>
-              <th className="px-4 py-3 font-semibold">Địa điểm</th>
-              <th className="px-4 py-3 font-semibold">Ngày ứng tuyển</th>
-              <th className="px-4 py-3 font-semibold">Trạng thái</th>
-              <th className="px-4 py-3 font-semibold text-center">Chat</th>
+              <th className="px-4 py-3 font-semibold">{t('applicantList_table_header_applicant')}</th>
+              <th className="px-4 py-3 font-semibold">{t('applicantList_table_header_fields')}</th>
+              <th className="px-4 py-3 font-semibold">{t('applicantList_table_header_experience')}</th>
+              <th className="px-4 py-3 font-semibold">{t('applicantList_table_header_location')}</th>
+              <th className="px-4 py-3 font-semibold">{t('applicantList_table_header_appliedDate')}</th>
+              <th className="px-4 py-3 font-semibold">{t('applicantList_table_header_status')}</th>
+              <th className="px-4 py-3 font-semibold text-center">{t('applicantList_table_header_chat')}</th>
             </tr>
           </thead>
           <tbody>
@@ -469,18 +507,18 @@ function ApplicantsListPage() {
                     <Avatar name={a.name} url={a.avatarUrl} initials={a.initials} />
                     <div>
                       <div className="font-semibold">{a.name}</div>
-                      <div className="text-xs text-slate-600">{a.age} tuổi</div>
+                      <div className="text-xs text-slate-600">{t('applicantList_age', { count: a.age })}</div>
                     </div>
                   </button>
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex flex-wrap gap-1.5">
                     {a.fields.slice(0, 3).map((f) => <Chip key={f}>{f}</Chip>)}
-                    {a.fields.length > 3 && <span className="text-xs text-slate-500">+{a.fields.length - 3}</span>}
+                    {a.fields.length > 3 && <span className="text-xs text-slate-500">{t('plus_prefix')}{t('applicantList_more', { count: a.fields.length - 3 })}</span>}
                   </div>
                 </td>
-                <td className="px-4 py-3">{a.yearsExp} năm</td>
-                <td className="px-4 py-3">{a.location ?? "—"}</td>
+                <td className="px-4 py-3">{t('applicantList_experience', { count: a.yearsExp })}</td>
+                <td className="px-4 py-3">{a.location ?? t('no_date_placeholder')}</td>
                 <td className="px-4 py-3">{fmtDate(a.appliedAt)}</td>
                 <td className="px-4 py-3">
                   <StatusBadge s={a.status} />
@@ -499,7 +537,7 @@ function ApplicantsListPage() {
             {filtered.length === 0 && (
               <tr>
                 <td colSpan={7} className="px-4 py-10 text-center text-slate-500">
-                  Không có ứng viên phù hợp.
+                  {t('applicantList_empty')}
                 </td>
               </tr>
             )}
@@ -524,13 +562,14 @@ function ApplicantsListPage() {
 ============================================================================ */
 export default function ApplicantPage() {
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   if (!user) {
     return (
       <div className="min-h-screen bg-slate-50 text-slate-900 antialiased">
         <Header variant="guest" />
         <main className="grid h-[calc(100vh-8rem)] place-items-center">
-          <p>Đang tải...</p>
+          <p>{t('profile_loading')}</p>
         </main>
         <Footer />
       </div>

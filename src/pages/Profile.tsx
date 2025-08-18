@@ -1,9 +1,10 @@
 // App.tsx
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate, type NavigateFunction } from "react-router-dom";
 import { Footer } from "../components/Footer";
 import { Header } from "../components/Header";
 import { useAuth } from "../contexts/AuthContext";
+import { useTranslation } from 'react-i18next';
 
 /* =============================================================================
    Types (Seeker-only)
@@ -101,6 +102,7 @@ function Field({ label, required, hint, error, children }: { label: string; requ
 }
 
 function ChipsInput({ value, onChange, placeholder, disabled }: { value: string[]; onChange?: (next: string[]) => void; placeholder?: string; disabled?: boolean; }) {
+  const { t } = useTranslation();
   const [draft, setDraft] = useState("");
   const add = (raw?: string) => {
     const v = (raw ?? draft).trim();
@@ -114,9 +116,9 @@ function ChipsInput({ value, onChange, placeholder, disabled }: { value: string[
   if (disabled) {
     return (
       <div className="flex flex-wrap gap-2">
-        {value.length ? value.map((t) => (
-          <span key={t} className="rounded-full bg-blue-50 px-3 py-1 text-xs text-blue-700 ring-1 ring-blue-600/20">{t}</span>
-        )) : <span className="text-sm text-slate-500">Không có mục</span>}
+        {value.length ? value.map((v) => (
+          <span key={v} className="rounded-full bg-blue-50 px-3 py-1 text-xs text-blue-700 ring-1 ring-blue-600/20">{v}</span>
+        )) : <span className="text-sm text-slate-500">{t('profile_field_noItems')}</span>}
       </div>
     );
   }
@@ -124,26 +126,27 @@ function ChipsInput({ value, onChange, placeholder, disabled }: { value: string[
   return (
     <div className="rounded-xl border border-slate-300 bg-white p-2">
       <div className="flex flex-wrap gap-2">
-        {value.map((t) => (
-          <span key={t} className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs text-blue-700 ring-1 ring-blue-600/20">
-            {t}
-            <button className="text-slate-500 hover:text-rose-600" onClick={() => remove(t)} title="Xóa">✕</button>
+        {value.map((v) => (
+          <span key={v} className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs text-blue-700 ring-1 ring-blue-600/20">
+            {v}
+            <button className="text-slate-500 hover:text-rose-600" onClick={() => remove(v)} title={t('profile_chips_removeTitle')}>✕</button>
           </span>
         ))}
         <input
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); add(); } }}
-          placeholder={placeholder || "Thêm & Enter"}
+          placeholder={placeholder || t('profile_chips_addPlaceholder')}
           className="flex-1 min-w-[160px] border-none outline-none bg-transparent text-sm placeholder:text-slate-400"
         />
-        <button onClick={() => add()} className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:brightness-110">Thêm</button>
+        <button onClick={() => add()} className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:brightness-110">{t('profile_chips_addButton')}</button>
       </div>
     </div>
   );
 }
 
 function PriceInput({ value, onChange, disabled }: { value: Pricing; onChange?: (next: Pricing) => void; disabled?: boolean; }) {
+  const { t } = useTranslation();
   const set = (patch: Partial<Pricing>) => onChange?.({ ...value, ...patch });
   return (
     <div className="flex flex-wrap gap-2">
@@ -155,7 +158,7 @@ function PriceInput({ value, onChange, disabled }: { value: Pricing; onChange?: 
         disabled={disabled}
         onChange={(e) => set({ amount: clamp(Number(e.target.value || 0), 0, 1e12) })}
         className="w-40 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/20 disabled:bg-slate-100"
-        placeholder="Giá trị"
+        placeholder={t('profile_priceInput_placeholder')}
       />
       <select
         value={value.currency ?? "VND"}
@@ -172,14 +175,14 @@ function PriceInput({ value, onChange, disabled }: { value: Pricing; onChange?: 
         onChange={(e) => set({ unit: e.target.value as PriceUnit })}
         className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/20 disabled:bg-slate-100"
       >
-        <option value="project">/ dự án</option>
-        <option value="hour">/ giờ</option>
+        <option value="project">{t('profile_priceInput_perProject')}</option>
+        <option value="hour">{t('profile_priceInput_perHour')}</option>
       </select>
       <label className="inline-flex items-center gap-2 text-sm text-slate-700">
         <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600/30"
                checked={!!value.public} disabled={disabled}
                onChange={(e) => set({ public: e.target.checked })}/>
-        Hiển thị công khai
+        {t('profile_priceInput_public')}
       </label>
     </div>
   );
@@ -189,13 +192,13 @@ function Tabs({ tabs, activeKey, onChange }: { tabs: { key: string; label: strin
   return (
     <div className="mb-6 overflow-x-auto">
       <div className="inline-flex gap-2 rounded-xl border border-slate-200 bg-white p-1">
-        {tabs.map((t) => (
+        {tabs.map((tab) => (
           <button
-            key={t.key}
-            onClick={() => onChange(t.key)}
-            className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-sm ${activeKey === t.key ? "bg-slate-900 text-white" : "text-slate-700 hover:bg-slate-50"}`}
+            key={tab.key}
+            onClick={() => onChange(tab.key)}
+            className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-sm ${activeKey === tab.key ? "bg-slate-900 text-white" : "text-slate-700 hover:bg-slate-50"}`}
           >
-            {t.label}
+            {tab.label}
           </button>
         ))}
       </div>
@@ -207,56 +210,57 @@ function Tabs({ tabs, activeKey, onChange }: { tabs: { key: string; label: strin
    Sections (Seeker)
 ============================================================================= */
 function BasicSection({ value, onChange, readOnly, errors }: { value: ProfileBasic; onChange: (v: ProfileBasic) => void; readOnly: boolean; errors: Record<string, string | undefined>; }) {
+  const { t } = useTranslation();
   const set = (patch: Partial<ProfileBasic>) => onChange({ ...value, ...patch });
   return (
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-      <Field label="Họ tên" required error={errors["basic.fullName"]}>
+      <Field label={t('basic_fullName')} required error={errors["basic.fullName"]}>
         <input
           value={value.fullName} disabled={readOnly}
           onChange={(e) => set({ fullName: e.target.value })}
           className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/20 disabled:bg-slate-100"
-          placeholder="VD: Nguyễn Minh Khôi"
+          placeholder={t('basic_fullName_placeholder')}
         />
       </Field>
-      <Field label="Headline" hint="Dòng mô tả ngắn (≤ 80 ký tự)">
+      <Field label={t('basic_headline')} hint={t('basic_headline_hint')}>
         <input
           value={value.headline ?? ""} disabled={readOnly}
           onChange={(e) => set({ headline: e.target.value })}
           className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/20 disabled:bg-slate-100"
-          placeholder="VD: Phi công drone – Photogrammetry/RTK"
+          placeholder={t('basic_headline_placeholder')}
         />
       </Field>
-      <Field label="Số năm kinh nghiệm" required error={errors["basic.yearsExp"]}>
+      <Field label={t('basic_yearsExp')} required error={errors["basic.yearsExp"]}>
         <input
           type="number" min={0} max={40} value={value.yearsExp} disabled={readOnly}
           onChange={(e) => set({ yearsExp: clamp(Number(e.target.value || 0), 0, 40) })}
           className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/20 disabled:bg-slate-100"
         />
       </Field>
-      <Field label="Ngôn ngữ">
-        <ChipsInput value={value.languages} onChange={(arr) => set({ languages: arr })} disabled={readOnly} placeholder="Thêm ngôn ngữ & Enter (vi, en, ...)" />
+      <Field label={t('basic_languages')}>
+        <ChipsInput value={value.languages} onChange={(arr) => set({ languages: arr })} disabled={readOnly} placeholder={t('basic_languages_placeholder')} />
       </Field>
-      <Field label="Thành phố" required error={errors["basic.location.city"]}>
+      <Field label={t('basic_city')} required error={errors["basic.location.city"]}>
         <input
           value={value.location.city} disabled={readOnly}
           onChange={(e) => set({ location: { ...value.location, city: e.target.value } })}
           className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/20 disabled:bg-slate-100"
-          placeholder="VD: Hà Nội"
+          placeholder={t('basic_city_placeholder')}
         />
       </Field>
-      <Field label="Bán kính di chuyển (km)">
+      <Field label={t('basic_radius')}>
         <input
           type="number" min={0} max={500} value={value.location.radiusKm ?? 0} disabled={readOnly}
           onChange={(e) => set({ location: { ...value.location, radiusKm: clamp(Number(e.target.value || 0), 0, 500) } })}
           className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/20 disabled:bg-slate-100"
         />
       </Field>
-      <Field label="Giới thiệu ngắn">
+      <Field label={t('basic_about')}>
         <textarea
           rows={4} value={value.about ?? ""} disabled={readOnly}
           onChange={(e) => set({ about: e.target.value })}
           className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/20 disabled:bg-slate-100"
-          placeholder="Tóm tắt kinh nghiệm, thế mạnh, chứng chỉ…"
+          placeholder={t('basic_about_placeholder')}
         />
       </Field>
     </div>
@@ -264,10 +268,11 @@ function BasicSection({ value, onChange, readOnly, errors }: { value: ProfileBas
 }
 
 function ContactSection({ value, onChange, readOnly, errors }: { value: ContactInfo; onChange: (v: ContactInfo) => void; readOnly: boolean; errors: Record<string, string | undefined>; }) {
+  const { t } = useTranslation();
   const set = (p: Partial<ContactInfo>) => onChange({ ...value, ...p });
   return (
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-      <Field label="Email" required error={errors["contact.email"]}>
+      <Field label={t('contact_email')} required error={errors["contact.email"]}>
         <input
           value={value.email} disabled={readOnly}
           onChange={(e) => set({ email: e.target.value })}
@@ -275,33 +280,33 @@ function ContactSection({ value, onChange, readOnly, errors }: { value: ContactI
           className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none disabled:bg-slate-100"
         />
       </Field>
-      <Field label="Công khai email?">
+      <Field label={t('contact_email_public')}>
         <label className="inline-flex items-center gap-2 text-sm text-slate-700">
           <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600/30"
                  checked={!!value.emailPublic} disabled={readOnly}
                  onChange={(e) => set({ emailPublic: e.target.checked })}/>
-          Bật
+          {t('contact_toggle_on')}
         </label>
       </Field>
-      <Field label="Số điện thoại">
+      <Field label={t('contact_phone')}>
         <input
           value={value.phone ?? ""} disabled={readOnly}
           onChange={(e) => set({ phone: e.target.value })}
-          placeholder="+84 ..."
+          placeholder={t('contact_phone_placeholder')}
           className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none disabled:bg-slate-100"
         />
       </Field>
-      <Field label="Công khai số điện thoại?">
+      <Field label={t('contact_phone_public')}>
         <label className="inline-flex items-center gap-2 text-sm text-slate-700">
           <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600/30"
                  checked={!!value.phonePublic} disabled={readOnly}
                  onChange={(e) => set({ phonePublic: e.target.checked })}/>
-          Bật
+          {t('contact_toggle_on')}
         </label>
       </Field>
 
       <div className="sm:col-span-2">
-        <Field label="Liên kết (Website/LinkedIn/YouTube)">
+        <Field label={t('contact_links')}>
           <ChipsInput
             value={(value.links ?? []).map((l) => l.url)} disabled={readOnly}
             onChange={(arr) =>
@@ -312,7 +317,7 @@ function ContactSection({ value, onChange, readOnly, errors }: { value: ContactI
                 })),
               })
             }
-            placeholder="Dán URL và Enter"
+            placeholder={t('contact_links_placeholder')}
           />
         </Field>
       </div>
@@ -327,6 +332,7 @@ function SkillsCertsSection({
   certs: Certification[]; setCerts: (arr: Certification[]) => void;
   readOnly: boolean;
 }) {
+  const { t } = useTranslation();
   // CRUD nhanh cho skill/cert — tập trung vào thao tác chỉnh sửa
   const addSkill = () => setSkills([...skills, { name: "", level: "intermediate" }]);
   const updateSkill = (i: number, patch: Partial<Skill>) => { const next = [...skills]; next[i] = { ...next[i], ...patch }; setSkills(next); };
@@ -340,16 +346,16 @@ function SkillsCertsSection({
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h4 className="text-sm font-semibold">Kỹ năng</h4>
-          {!readOnly && <button onClick={addSkill} className="text-sm text-blue-700 hover:underline">+ Thêm kỹ năng</button>}
+          <h4 className="text-sm font-semibold">{t('skills_title')}</h4>
+          {!readOnly && <button onClick={addSkill} className="text-sm text-blue-700 hover:underline">{t('skills_add')}</button>}
         </div>
-        {skills.length === 0 && <div className="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500">Chưa có kỹ năng nào.</div>}
+        {skills.length === 0 && <div className="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500">{t('skills_empty')}</div>}
         {skills.map((s, i) => (
           <div key={i} className="grid grid-cols-1 gap-2 sm:grid-cols-5">
             <input
               value={s.name} disabled={readOnly}
               onChange={(e) => updateSkill(i, { name: e.target.value })}
-              placeholder="Tên kỹ năng (VD: RTK)"
+              placeholder={t('skills_placeholder')}
               className="sm:col-span-3 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm disabled:bg-slate-100"
             />
             <select
@@ -357,33 +363,33 @@ function SkillsCertsSection({
               onChange={(e) => updateSkill(i, { level: e.target.value as any })}
               className="sm:col-span-2 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm disabled:bg-slate-100"
             >
-              <option value="beginner">Beginner</option>
-              <option value="intermediate">Intermediate</option>
-              <option value="advanced">Advanced</option>
+              <option value="beginner">{t('skills_level_beginner')}</option>
+              <option value="intermediate">{t('skills_level_intermediate')}</option>
+              <option value="advanced">{t('skills_level_advanced')}</option>
             </select>
-            {!readOnly && <button onClick={() => removeSkill(i)} className="text-left text-xs text-rose-600 hover:underline">Xoá</button>}
+            {!readOnly && <button onClick={() => removeSkill(i)} className="text-left text-xs text-rose-600 hover:underline">{t('skills_remove')}</button>}
           </div>
         ))}
       </div>
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h4 className="text-sm font-semibold">Chứng chỉ</h4>
-          {!readOnly && <button onClick={addCert} className="text-sm text-blue-700 hover:underline">+ Thêm chứng chỉ</button>}
+          <h4 className="text-sm font-semibold">{t('certs_title')}</h4>
+          {!readOnly && <button onClick={addCert} className="text-sm text-blue-700 hover:underline">{t('certs_add')}</button>}
         </div>
-        {certs.length === 0 && <div className="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500">Chưa có chứng chỉ nào.</div>}
+        {certs.length === 0 && <div className="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500">{t('certs_empty')}</div>}
         {certs.map((c, i) => (
           <div key={i} className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             <input
               value={c.name} disabled={readOnly}
               onChange={(e) => updateCert(i, { name: e.target.value })}
-              placeholder="Tên chứng chỉ (VD: A2 / Part 107)"
+              placeholder={t('certs_name_placeholder')}
               className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm disabled:bg-slate-100"
             />
             <input
               value={c.issuer ?? ""} disabled={readOnly}
               onChange={(e) => updateCert(i, { issuer: e.target.value })}
-              placeholder="Tổ chức cấp"
+              placeholder={t('certs_issuer_placeholder')}
               className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm disabled:bg-slate-100"
             />
             <input
@@ -391,7 +397,7 @@ function SkillsCertsSection({
               onChange={(e) => updateCert(i, { expiresAt: e.target.value })}
               className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm disabled:bg-slate-100"
             />
-            {!readOnly && <button onClick={() => removeCert(i)} className="text-left text-xs text-rose-600 hover:underline">Xoá</button>}
+            {!readOnly && <button onClick={() => removeCert(i)} className="text-left text-xs text-rose-600 hover:underline">{t('skills_remove')}</button>}
           </div>
         ))}
       </div>
@@ -402,6 +408,7 @@ function SkillsCertsSection({
 function EquipDomainsSection({
   equipment, setEquipment, domains, setDomains, readOnly,
 }: { equipment: EquipmentItem[]; setEquipment: (arr: EquipmentItem[]) => void; domains: DomainItem[]; setDomains: (arr: DomainItem[]) => void; readOnly: boolean; }) {
+  const { t } = useTranslation();
   const addEq = () => setEquipment([...equipment, { drone: "" }]);
   const updEq = (i: number, p: Partial<EquipmentItem>) => { const next = [...equipment]; next[i] = { ...next[i], ...p }; setEquipment(next); };
   const rmEq = (i: number) => setEquipment(equipment.filter((_, idx) => idx !== i));
@@ -414,23 +421,23 @@ function EquipDomainsSection({
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h4 className="text-sm font-semibold">Thiết bị</h4>
-          {!readOnly && <button onClick={addEq} className="text-sm text-blue-700 hover:underline">+ Thêm thiết bị</button>}
+          <h4 className="text-sm font-semibold">{t('equip_title')}</h4>
+          {!readOnly && <button onClick={addEq} className="text-sm text-blue-700 hover:underline">{t('equip_add')}</button>}
         </div>
-        {equipment.length === 0 && <div className="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500">Chưa khai báo thiết bị.</div>}
+        {equipment.length === 0 && <div className="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500">{t('equip_empty')}</div>}
         {equipment.map((e, i) => (
           <div key={i} className="space-y-2 rounded-xl border border-slate-200 bg-white p-4">
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               <input
                 value={e.drone} disabled={readOnly}
                 onChange={(ev) => updEq(i, { drone: ev.target.value })}
-                placeholder="Drone model (VD: Mavic 3E)"
+                placeholder={t('equip_drone_placeholder')}
                 className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm disabled:bg-slate-100 sm:col-span-2"
               />
               <input
                 value={(e.sensors ?? []).join(", ")} disabled={readOnly}
                 onChange={(ev) => updEq(i, { sensors: ev.target.value.split(",").map((s) => s.trim()).filter(Boolean) })}
-                placeholder="Sensors (VD: RGB, Tele, LiDAR)"
+                placeholder={t('equip_sensors_placeholder')}
                 className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm disabled:bg-slate-100"
               />
             </div>
@@ -439,42 +446,42 @@ function EquipDomainsSection({
                 <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600/30"
                        checked={!!e.hasRTK} disabled={readOnly}
                        onChange={(ev) => updEq(i, { hasRTK: ev.target.checked })}/>
-                RTK/GCP
+                {t('equip_rtk')}
               </label>
               <label className="inline-flex items-center gap-2">
                 <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600/30"
                        checked={!!e.hasInsurance} disabled={readOnly}
                        onChange={(ev) => updEq(i, { hasInsurance: ev.target.checked })}/>
-                Bảo hiểm
+                {t('equip_insurance')}
               </label>
             </div>
-            {!readOnly && <button onClick={() => rmEq(i)} className="text-left text-xs text-rose-600 hover:underline">Xoá thiết bị</button>}
+            {!readOnly && <button onClick={() => rmEq(i)} className="text-left text-xs text-rose-600 hover:underline">{t('equip_remove')}</button>}
           </div>
         ))}
       </div>
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h4 className="text-sm font-semibold">Lĩnh vực hoạt động</h4>
-          {!readOnly && <button onClick={addDomain} className="text-sm text-blue-700 hover:underline">+ Thêm lĩnh vực</button>}
+          <h4 className="text-sm font-semibold">{t('domains_title')}</h4>
+          {!readOnly && <button onClick={addDomain} className="text-sm text-blue-700 hover:underline">{t('domains_add')}</button>}
         </div>
-        {domains.length === 0 && <div className="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500">Chưa chọn lĩnh vực.</div>}
+        {domains.length === 0 && <div className="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500">{t('domains_empty')}</div>}
         <div className="space-y-2">
           {domains.map((d, i) => (
             <div key={i} className="grid grid-cols-1 gap-2 sm:grid-cols-5">
               <input
                 value={d.name} disabled={readOnly}
                 onChange={(ev) => updDomain(i, { name: ev.target.value })}
-                placeholder="VD: Khảo sát / Kiểm định / Mapping / Ảnh / Video"
+                placeholder={t('domains_name_placeholder')}
                 className="sm:col-span-4 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm disabled:bg-slate-100"
               />
               <input
                 type="number" min={0} max={100} value={d.priority ?? 0} disabled={readOnly}
                 onChange={(ev) => updDomain(i, { priority: clamp(Number(ev.target.value || 0), 0, 100) })}
                 className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm disabled:bg-slate-100"
-                placeholder="% ưu tiên"
+                placeholder={t('domains_priority_placeholder')}
               />
-              {!readOnly && <button onClick={() => rmDomain(i)} className="text-left text-xs text-rose-600 hover:underline">Xoá</button>}
+              {!readOnly && <button onClick={() => rmDomain(i)} className="text-left text-xs text-rose-600 hover:underline">{t('skills_remove')}</button>}
             </div>
           ))}
         </div>
@@ -491,6 +498,7 @@ function ExperiencePricingAvailabilitySection({
   availability?: Availability; setAvailability: (a: Availability) => void;
   readOnly: boolean;
 }) {
+  const { t } = useTranslation();
   // CRUD kinh nghiệm — đủ để người dùng thao tác nhanh
   const addExp = () => setExperience([...experience, { id: uid(), title: "", org: "", start: todayISO() }]);
   const updExp = (id: string, p: Partial<ExperienceItem>) => setExperience(experience.map((e) => (e.id === id ? { ...e, ...p } : e)));
@@ -513,10 +521,10 @@ function ExperiencePricingAvailabilitySection({
       {/* Experience timeline */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h4 className="text-sm font-semibold">Kinh nghiệm làm việc</h4>
-          {!readOnly && <button onClick={addExp} className="text-sm text-blue-700 hover:underline">+ Thêm mục</button>}
+          <h4 className="text-sm font-semibold">{t('exp_title')}</h4>
+          {!readOnly && <button onClick={addExp} className="text-sm text-blue-700 hover:underline">{t('exp_add')}</button>}
         </div>
-        {experience.length === 0 && <div className="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500">Chưa có kinh nghiệm nào.</div>}
+        {experience.length === 0 && <div className="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500">{t('exp_empty')}</div>}
         <div className="space-y-3">
           {experience.map((e) => (
             <div key={e.id} className="rounded-xl border border-slate-200 bg-white p-4">
@@ -524,13 +532,13 @@ function ExperiencePricingAvailabilitySection({
                 <input
                   value={e.title} disabled={readOnly}
                   onChange={(ev) => updExp(e.id, { title: ev.target.value })}
-                  placeholder="Vai trò (VD: Drone Survey Pilot)"
+                  placeholder={t('exp_role_placeholder')}
                   className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm disabled:bg-slate-100"
                 />
                 <input
                   value={e.org} disabled={readOnly}
                   onChange={(ev) => updExp(e.id, { org: ev.target.value })}
-                  placeholder="Tổ chức / Dự án"
+                  placeholder={t('exp_org_placeholder')}
                   className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm disabled:bg-slate-100"
                 />
                 <input
@@ -547,10 +555,10 @@ function ExperiencePricingAvailabilitySection({
               <textarea
                 rows={3} value={e.desc ?? ""} disabled={readOnly}
                 onChange={(ev) => updExp(e.id, { desc: ev.target.value })}
-                placeholder="Mô tả ngắn (≥ 50 từ để tăng khả năng match)"
+                placeholder={t('exp_desc_placeholder')}
                 className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm disabled:bg-slate-100"
               />
-              {!readOnly && <button onClick={() => rmExp(e.id)} className="mt-2 text-left text-xs text-rose-600 hover:underline">Xoá mục này</button>}
+              {!readOnly && <button onClick={() => rmExp(e.id)} className="mt-2 text-left text-xs text-rose-600 hover:underline">{t('exp_remove')}</button>}
             </div>
           ))}
         </div>
@@ -558,14 +566,14 @@ function ExperiencePricingAvailabilitySection({
 
       {/* Pricing */}
       <div className="space-y-3">
-        <h4 className="text-sm font-semibold">Giá & hình thức tính phí</h4>
+        <h4 className="text-sm font-semibold">{t('pricing_title')}</h4>
         <PriceInput value={pricing ?? { amount: 0, currency: "VND", unit: "project", public: false }} onChange={setPricing} disabled={readOnly} />
         {!readOnly && (
           <textarea
             rows={2}
             value={pricing?.note ?? ""}
             onChange={(e) => setPricing({ ...(pricing ?? {}), note: e.target.value })}
-            placeholder="Ghi chú: bao gồm/không gồm, điều kiện…"
+            placeholder={t('pricing_note_placeholder')}
             className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm"
           />
         )}
@@ -573,20 +581,20 @@ function ExperiencePricingAvailabilitySection({
 
       {/* Availability weekly */}
       <div className="space-y-3">
-        <h4 className="text-sm font-semibold">Khả dụng (theo tuần)</h4>
+        <h4 className="text-sm font-semibold">{t('avail_title')}</h4>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-slate-600">
-                <th className="px-2 py-2 text-left">Ngày</th>
+                <th className="px-2 py-2 text-left">{t('avail_table_day')}</th>
                 {["am", "pm", "eve"].map((s) => <th key={s} className="px-2 py-2 capitalize">{s}</th>)}
-                <th className="px-2 py-2">Trạng thái</th>
+                <th className="px-2 py-2">{t('avail_table_status')}</th>
               </tr>
             </thead>
             <tbody>
               {(["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as DayKey[]).map((d) => (
                 <tr key={d} className="border-t border-slate-200">
-                  <td className="px-2 py-2 font-medium capitalize">{d}</td>
+                  <td className="px-2 py-2 font-medium capitalize">{t(`avail_day_${d}` as any)}</td>
                   {(["am", "pm", "eve"] as SlotKey[]).map((s) => {
                     const checked = (a.weeklySlots?.[d] || []).includes(s);
                     return (
@@ -607,9 +615,9 @@ function ExperiencePricingAvailabilitySection({
                         onChange={(e) => setAvailability({ ...a, status: e.target.value as any })}
                         className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm disabled:bg-slate-100"
                       >
-                        <option value="open">Nhận job</option>
-                        <option value="busy">Bận</option>
-                        <option value="backup">Dự phòng</option>
+                        <option value="open">{t('avail_status_open')}</option>
+                        <option value="busy">{t('avail_status_busy')}</option>
+                        <option value="backup">{t('avail_status_backup')}</option>
                       </select>
                     </td>
                   )}
@@ -630,6 +638,7 @@ function VisibilityNotificationsSection({
   notifications: Notifications; setNotifications: (n: Notifications) => void;
   readOnly: boolean;
 }) {
+  const { t } = useTranslation();
   const toggleVis = (key: string) => { if (readOnly) return; setVisibility({ ...visibility, [key]: !visibility[key] }); };
   const toggleCat = (cat: string) => {
     if (readOnly) return;
@@ -642,7 +651,7 @@ function VisibilityNotificationsSection({
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       <div className="space-y-3">
-        <h4 className="text-sm font-semibold">Hiển thị công khai</h4>
+        <h4 className="text-sm font-semibold">{t('vis_title')}</h4>
         {["email", "phone", "pricing", "equipment"].map((k) => (
           <label key={k} className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm">
             <span>{k}</span>
@@ -657,7 +666,7 @@ function VisibilityNotificationsSection({
       </div>
 
       <div className="space-y-3">
-        <h4 className="text-sm font-semibold">Thông báo</h4>
+        <h4 className="text-sm font-semibold">{t('notifications_title')}</h4>
         <label className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm">
           <span>Email</span>
           <input
@@ -678,7 +687,7 @@ function VisibilityNotificationsSection({
         </label>
 
         <div className="rounded-xl border border-slate-200 bg-white p-3 text-sm">
-          <div className="mb-2 font-medium">Categories</div>
+          <div className="mb-2 font-medium">{t('notifications_categories')}</div>
           <div className="flex flex-wrap gap-2">
             {catList.map((c) => (
               <button
@@ -702,41 +711,69 @@ function VisibilityNotificationsSection({
 /* =============================================================================
    Seeker Profile Editor – chỉ cho người nhận việc
 ============================================================================= */
+
+const MOCK_PROFILE_DATA: SeekerDoc = {
+  basic: {
+    fullName: "profile_mock_fullName",
+    headline: "profile_mock_headline",
+    yearsExp: 4,
+    languages: ["vi", "en"],
+    location: { city: "hanoi", province: "HN", radiusKm: 50 },
+    about: "profile_mock_about",
+  },
+  contact: { email: "you@example.com", emailPublic: false, links: [] },
+  visibility: { email: false, phone: false, pricing: false, equipment: true },
+  notifications: { email: true, push: false, categories: ["invites", "messages"] },
+  skills: [{ name: "skill_rtk", level: "advanced" }, { name: "skill_photogrammetry", level: "advanced" }],
+  certifications: [{ name: "profile_mock_cert_a2_name", issuer: "profile_mock_cert_a2_issuer", expiresAt: "" }],
+  equipment: [{ drone: "profile_mock_equip_drone", sensors: ["profile_mock_equip_sensor"], hasRTK: true, hasInsurance: true }],
+  domains: [{ name: "profile_mock_domain_survey", priority: 60 }, { name: "profile_mock_domain_inspection", priority: 40 }],
+  experience: [{ id: uid(), title: "profile_mock_exp_title", org: "profile_mock_exp_org", start: "2023-01-01", desc: "profile_mock_exp_desc" }],
+  pricing: { amount: 1200000, currency: "VND", unit: "project", public: false, note: "" },
+  availability: { weeklySlots: { mon: ["am", "pm"], wed: ["pm"] }, status: "open" },
+  status: "draft",
+  updatedAt: new Date().toISOString(),
+};
+
+
 function SeekerProfileEditor({ mode = "update" as Mode, navigate }: { mode?: Mode, navigate: NavigateFunction }) {
+  const { t } = useTranslation();
   const readOnly = mode === "read";
 
   // State hồ sơ (mock dữ liệu khởi tạo để bạn thấy form đầy đủ)
-  const [doc, setDoc] = useState<SeekerDoc>({
+  const initialDoc = useMemo((): SeekerDoc => ({
+    ...MOCK_PROFILE_DATA,
     basic: {
-      fullName: "Nguyễn Minh Khôi",
-      headline: "Phi công drone – Photogrammetry/RTK",
-      yearsExp: 4,
-      languages: ["vi", "en"],
-      location: { city: "Hà Nội", province: "HN", radiusKm: 50 },
-      about: "Có kinh nghiệm bay khảo sát, xử lý ảnh Metashape/Pix4D…",
+      ...MOCK_PROFILE_DATA.basic,
+      fullName: t(MOCK_PROFILE_DATA.basic.fullName),
+      headline: t(MOCK_PROFILE_DATA.basic.headline!),
+      location: {
+        ...MOCK_PROFILE_DATA.basic.location,
+        city: t(MOCK_PROFILE_DATA.basic.location.city),
+      },
+      about: t(MOCK_PROFILE_DATA.basic.about!),
     },
-    contact: { email: "you@example.com", emailPublic: false, links: [] },
-    visibility: { email: false, phone: false, pricing: false, equipment: true },
-    notifications: { email: true, push: false, categories: ["invites", "messages"] },
-    skills: [{ name: "RTK", level: "advanced" }, { name: "Photogrammetry", level: "advanced" }],
-    certifications: [{ name: "A2", issuer: "CAA", expiresAt: "" }],
-    equipment: [{ drone: "Mavic 3E", sensors: ["RGB"], hasRTK: true, hasInsurance: true }],
-    domains: [{ name: "Khảo sát", priority: 60 }, { name: "Kiểm định", priority: 40 }],
-    experience: [{ id: uid(), title: "Drone Survey Pilot", org: "Công ty X", start: "2023-01-01", desc: "Khảo sát công trình, dựng orthophoto..." }],
-    pricing: { amount: 1200000, currency: "VND", unit: "project", public: false, note: "" },
-    availability: { weeklySlots: { mon: ["am", "pm"], wed: ["pm"] }, status: "open" },
-    status: "draft",
-    updatedAt: new Date().toISOString(),
-  });
+    skills: MOCK_PROFILE_DATA.skills.map(skill => ({ ...skill, name: t(skill.name) })),
+    certifications: MOCK_PROFILE_DATA.certifications.map(cert => ({ ...cert, name: t(cert.name), issuer: t(cert.issuer!) })),
+    equipment: MOCK_PROFILE_DATA.equipment.map(eq => ({ ...eq, drone: t(eq.drone), sensors: eq.sensors?.map(s => t(s)) })),
+    domains: MOCK_PROFILE_DATA.domains.map(domain => ({ ...domain, name: t(domain.name) })),
+    experience: MOCK_PROFILE_DATA.experience.map(exp => ({ ...exp, title: t(exp.title), org: t(exp.org), desc: t(exp.desc!) })),
+  }), [t]);
+
+  const [doc, setDoc] = useState<SeekerDoc>(initialDoc);
+
+  useEffect(() => {
+    setDoc(initialDoc);
+  }, [initialDoc]);
 
   // Tabs cố định theo scope seeker (không Portfolio)
   const tabs = [
-    { key: "basic", label: "Thông tin cơ bản" },
-    { key: "contact", label: "Liên hệ" },
-    { key: "skills", label: "Kỹ năng & Chứng chỉ" },
-    { key: "equip", label: "Thiết bị & Lĩnh vực" },
-    { key: "exp", label: "Kinh nghiệm · Giá · Khả dụng" },
-    { key: "vis", label: "Hiển thị & Thông báo" },
+    { key: "basic", label: t('profile_tab_basic') },
+    { key: "contact", label: t('profile_tab_contact') },
+    { key: "skills", label: t('profile_tab_skills') },
+    { key: "equip", label: t('profile_tab_equip') },
+    { key: "exp", label: t('profile_tab_exp') },
+    { key: "vis", label: t('profile_tab_vis') },
   ];
   const [activeTab, setActiveTab] = useState<string>("basic");
 
@@ -744,17 +781,17 @@ function SeekerProfileEditor({ mode = "update" as Mode, navigate }: { mode?: Mod
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
   const validate = () => {
     const e: Record<string, string> = {};
-    if (!doc.basic.fullName || doc.basic.fullName.trim().length < 2) e["basic.fullName"] = "Tên tối thiểu 2 ký tự.";
-    if (doc.basic.yearsExp < 0 || doc.basic.yearsExp > 40) e["basic.yearsExp"] = "Kinh nghiệm 0–40 năm.";
-    if (!doc.basic.location.city) e["basic.location.city"] = "Cần thành phố.";
-    if (!doc.contact.email || !/.+@.+\..+/.test(doc.contact.email)) e["contact.email"] = "Email không hợp lệ.";
+    if (!doc.basic.fullName || doc.basic.fullName.trim().length < 2) e["basic.fullName"] = t('validation_fullName');
+    if (doc.basic.yearsExp < 0 || doc.basic.yearsExp > 40) e["basic.yearsExp"] = t('validation_yearsExp');
+    if (!doc.basic.location.city) e["basic.location.city"] = t('validation_city');
+    if (!doc.contact.email || !/.+@.+\..+/.test(doc.contact.email)) e["contact.email"] = t('validation_email');
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
   // Hành động: lưu nháp / lưu thay đổi (demo)
-  const saveDraft = () => { if (validate()) alert("Đã lưu nháp ✅ (demo)"); };
-  const saveChanges = () => { if (validate()) alert("Lưu thay đổi hồ sơ ✅ (demo)"); };
+  const saveDraft = () => { if (validate()) alert(t('alert_draftSaved')); };
+  const saveChanges = () => { if (validate()) alert(t('alert_changesSaved')); };
 
   // Render section theo tab
   const renderSection = () => {
@@ -806,16 +843,16 @@ function SeekerProfileEditor({ mode = "update" as Mode, navigate }: { mode?: Mod
       {/* Breadcrumb + chip mode */}
       <div className="mb-4 flex items-center justify-between">
         <nav className="text-sm text-slate-500">
-          <span className="hover:underline cursor-pointer">Hồ sơ</span>
+          <span className="hover:underline cursor-pointer">{t('profile_breadcrumb_profile')}</span>
           <span className="mx-2">/</span>
-          <span className="text-slate-700">Chỉnh sửa</span>
+          <span className="text-slate-700">{t('profile_breadcrumb_edit')}</span>
         </nav>
       </div>
 
       {/* Title */}
       <div className="mb-6">
-        <h1 className="text-4xl font-bold tracking-tight">Chỉnh sửa hồ sơ cá nhân</h1>
-        <p className="text-sm text-slate-600">Cập nhật thông tin để tăng khả năng match & độ tin cậy.</p>
+        <h1 className="text-4xl font-bold tracking-tight">{t('profile_edit_title')}</h1>
+        <p className="text-sm text-slate-600">{t('profile_edit_subtitle')}</p>
       </div>
 
       {/* Tabs */}
@@ -828,11 +865,11 @@ function SeekerProfileEditor({ mode = "update" as Mode, navigate }: { mode?: Mod
       {!readOnly && (
         <div className="sticky bottom-0 mt-8 border-t border-slate-200 bg-white/80 backdrop-blur">
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-4">
-            <div className="text-sm text-slate-600">Cập nhật lần cuối: {new Date(doc.updatedAt).toLocaleString("vi-VN")}</div>
+            <div className="text-sm text-slate-600">{t('profile_lastUpdated')}{new Date(doc.updatedAt).toLocaleString("vi-VN")}</div>
             <div className="flex flex-wrap items-center gap-2">
-              <button onClick={saveDraft} className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm hover:bg-slate-50">Lưu nháp</button>
-              <button onClick={saveChanges} className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:brightness-110">Lưu thay đổi</button>
-              <button onClick={() => navigate("/seeker/find")} className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm hover:bg-slate-50">Hủy</button>
+              <button onClick={saveDraft} className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm hover:bg-slate-50">{t('profile_saveDraft')}</button>
+              <button onClick={saveChanges} className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:brightness-110">{t('profile_saveChanges')}</button>
+              <button onClick={() => navigate("/seeker/find")} className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm hover:bg-slate-50">{t('profile_cancel')}</button>
             </div>
           </div>
         </div>
@@ -841,7 +878,7 @@ function SeekerProfileEditor({ mode = "update" as Mode, navigate }: { mode?: Mod
       {/* Read-only: gợi ý chuyển sang chỉnh sửa */}
       {readOnly && (
         <div className="mt-8 grid place-items-center">
-          <button onClick={() => alert("Chuyển sang Update (demo)")} className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:brightness-110">Chỉnh sửa</button>
+          <button onClick={() => alert(t('alert_switchToUpdate'))} className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:brightness-110">{t('profile_switchToEdit')}</button>
         </div>
       )}
     </div>
@@ -854,6 +891,7 @@ function SeekerProfileEditor({ mode = "update" as Mode, navigate }: { mode?: Mod
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   // Guard clause in case user data is not available yet
   if (!user) {
@@ -861,7 +899,7 @@ export default function ProfilePage() {
       <div className="min-h-screen bg-slate-50 text-slate-900 antialiased">
         <Header variant="guest" />
         <main className="grid h-[calc(100vh-8rem)] place-items-center">
-          <p>Đang tải...</p>
+          <p>{t('profile_loading')}</p>
         </main>
         <Footer />
       </div>
@@ -877,8 +915,8 @@ export default function ProfilePage() {
           <SeekerProfileEditor mode="update" navigate={navigate} />
         ) : (
           <div className="mx-auto max-w-6xl px-4 py-8">
-            <h1 className="text-2xl font-bold">Hồ sơ nhà tuyển dụng (Poster)</h1>
-            <p className="mt-2 text-slate-600">Đây là trang hồ sơ dành cho nhà tuyển dụng. Nội dung sẽ được cập nhật sau.</p>
+            <h1 className="text-2xl font-bold">{t('profile_poster_title')}</h1>
+            <p className="mt-2 text-slate-600">{t('profile_poster_desc')}</p>
           </div>
         )}
       </main>

@@ -1,5 +1,50 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
+
+function LanguageSwitcher() {
+  const { i18n } = useTranslation();
+  const [isOpen, setIsOpen] = useState(false);
+
+  const languages = {
+    en: 'EN',
+    ja: 'JA',
+    vi: 'VI',
+  };
+
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng);
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-1 rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+      >
+        <span>{languages[i18n.language as keyof typeof languages] || 'VI'}</span>
+        <svg className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-24 rounded-xl border border-slate-200 bg-white shadow-lg">
+          {Object.entries(languages).map(([code, name]) => (
+            <button
+              key={code}
+              onClick={() => changeLanguage(code)}
+              className={`block w-full px-4 py-2 text-left text-sm ${i18n.language === code ? 'font-semibold text-blue-600' : 'text-slate-700'} hover:bg-slate-50`}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function IconBadge({ icon, count, label }: { icon: string; count: number; label: string }) {
   return (
@@ -43,6 +88,7 @@ export function Header({
 }: HeaderProps) {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { t, i18n } = useTranslation();
 
   const handleLogout = () => {
     logout();
@@ -59,7 +105,7 @@ export function Header({
               activeRoute === "find" ? "font-semibold text-blue-600" : "text-slate-600"
             }`}
           >
-            Tìm việc
+            {t('find_job')}
           </button>
           <button
             onClick={onMatches ?? (() => navigate("/seeker/matches"))}
@@ -67,7 +113,7 @@ export function Header({
                 activeRoute === "matches" ? "font-semibold text-blue-600" : "text-slate-600"
             }`}
           >
-            Matches
+            {t('matches')}
           </button>
           <button
             onClick={onFavorites ?? (() => navigate("/seeker/find"))}
@@ -75,7 +121,7 @@ export function Header({
               activeRoute === "favorites" ? "font-semibold text-blue-600" : "text-slate-600"
             }`}
           >
-            Yêu thích {favCount > 0 && <span className="rounded-full bg-blue-600/10 px-2 py-0.5 text-[11px] font-semibold text-blue-700">{favCount}</span>}
+            {t('favorites')} {favCount > 0 && <span className="rounded-full bg-blue-600/10 px-2 py-0.5 text-[11px] font-semibold text-blue-700">{favCount}</span>}
           </button>
         </nav>
       );
@@ -89,7 +135,7 @@ export function Header({
               activeRoute === "list" ? "font-semibold text-slate-900" : "text-slate-600"
             }`}
           >
-            Danh sách công việc
+            {t('job_list')}
           </button>
           <button
             onClick={onArchive ?? (() => navigate("/poster/jobs?tab=archive"))}
@@ -97,7 +143,7 @@ export function Header({
               activeRoute === "archive" ? "font-semibold text-slate-900" : "text-slate-600"
             }`}
           >
-            Kho lưu trữ
+            {t('archive')}
           </button>
         </nav>
       );
@@ -109,28 +155,30 @@ export function Header({
     if (!user) {
       return (
         <div className="flex items-center gap-3">
+          <LanguageSwitcher />
           <Link
             to="/login"
             className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
           >
-            Đăng nhập
+            {t('login')}
           </Link>
           <Link
             to="/login"
             className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-110"
           >
-            Đăng ký
+            {t('register')}
           </Link>
         </div>
       );
     }
     return (
       <div className="flex items-center gap-4">
+        <LanguageSwitcher />
         <Link to="/chat">
-          <IconBadge icon="💬" count={unreadChat} label="Tin nhắn" />
+          <IconBadge icon="💬" count={unreadChat} label={t('messages')} />
         </Link>
         <Link to="/notifications">
-          <IconBadge icon="🔔" count={unreadNoti} label="Thông báo" />
+          <IconBadge icon="🔔" count={unreadNoti} label={t('notifications')} />
         </Link>
         <div className="flex items-center gap-2">
           <Link to="/profile" className="flex items-center gap-2">
@@ -142,7 +190,7 @@ export function Header({
             onClick={handleLogout}
             className="rounded-xl border border-slate-300 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
           >
-            Đăng xuất
+            {t('logout')}
           </button>
         </div>
       </div>
