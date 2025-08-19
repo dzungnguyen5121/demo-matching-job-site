@@ -68,7 +68,7 @@ export default function TopPage() {
 
           {/* Hình minh họa */}
           <div className="relative">
-            <img src="/illustration.svg" alt={t('illustration_alt')} className="w-full rounded-3xl shadow-xl shadow-slate-900/5" />
+            <img src="/hero_section_image.png" alt={t('illustration_alt')} className="w-full rounded-3xl shadow-xl shadow-slate-900/5" />
           </div>
         </div>
       </section>

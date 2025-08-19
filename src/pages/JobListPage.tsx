@@ -456,103 +456,125 @@ function JobDialog({
   const { t } = useTranslation();
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-slate-900/50 p-4" role="dialog" aria-modal="true">
-      <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
-        <h3 className="mb-4 text-lg font-semibold">{form.id ? t('jobDialog_editTitle') : t('jobDialog_addTitle')}</h3>
-
-        {/* Nhóm trường nhập liệu */}
-        <div className="space-y-3">
-          {/* Tiêu đề */}
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium">{t('jobDialog_field_title')}</span>
-            <input
-              value={form.title}
-              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-              className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none ring-4 ring-transparent placeholder:text-slate-400 focus:border-blue-600 focus:ring-blue-600/20"
-              placeholder={t('jobDialog_field_title_placeholder')}
-            />
-          </label>
-
-          {/* Mô tả công việc */}
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium">{t('jobDialog_field_desc')}</span>
-            <textarea
-              value={form.description}
-              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-              className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none ring-4 ring-transparent placeholder:text-slate-400 focus:border-blue-600 focus:ring-blue-600/20"
-              rows={5}
-              placeholder={t('jobDialog_field_desc_placeholder')}
-            />
-          </label>
-
-          {/* Hàng 3 cột: Ngày đăng, Ngày hết hạn, Trạng thái */}
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <label className="block">
-              <span className="mb-1 block text-sm font-medium">{t('jobDialog_field_posted')}</span>
-              <input
-                type="date"
-                value={form.postedAt}
-                onChange={(e) => setForm((f) => ({ ...f, postedAt: e.target.value }))}
-                className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none ring-4 ring-transparent focus:border-blue-600 focus:ring-blue-600/20"
-              />
-            </label>
-
-            <label className="block">
-              <span className="mb-1 block text-sm font-medium">{t('jobDialog_field_expires')}</span>
-              <input
-                type="date"
-                value={form.expiredAt}
-                onChange={(e) => setForm((f) => ({ ...f, expiredAt: e.target.value }))}
-                className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none ring-4 ring-transparent focus:border-blue-600 focus:ring-blue-600/20"
-              />
-            </label>
-
-            <label className="block">
-              <span className="mb-1 block text-sm font-medium">{t('jobDialog_field_status')}</span>
-              <select
-                value={form.status}
-                onChange={(e) => setForm((f) => ({ ...f, status: e.target.value as any }))}
-                className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none ring-4 ring-transparent focus:border-blue-600 focus:ring-blue-600/20"
-              >
-                <option value="open">{t('jobDialog_status_open')}</option>
-                <option value="closed">{t('jobDialog_status_closed')}</option>
-                <option value="draft">{t('jobDialog_status_draft')}</option>
-              </select>
-            </label>
-          </div>
-
-          {/* Số lượng ứng viên (demo) - chỉ hiển thị khi sửa */}
-          {form.id && (
-            <label className="block">
-              <span className="mb-1 block text-sm font-medium">{t('jobDialog_field_applicants')}</span>
-              <input
-                type="number"
-                min={0}
-                value={form.applicants.length}
-                readOnly
-                className="w-full rounded-xl border border-slate-300 bg-slate-100 px-3 py-2 text-sm text-slate-500 outline-none ring-4 ring-transparent focus:border-blue-600 focus:ring-blue-600/20"
-              />
-            </label>
-          )}
-        </div>
-
-        {/* Nút hành động */}
-        <div className="mt-6 flex justify-end gap-2">
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/50 p-4 pt-10"
+      role="dialog"
+      aria-modal="true"
+      onClick={onClose}
+    >
+      <div
+        className="relative mx-auto w-full max-w-4xl rounded-2xl bg-white shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <header className="flex items-center justify-between border-b border-slate-200 p-4 sm:p-6">
+          <h3 className="text-lg font-semibold">
+            {form.id ? t('jobDialog_editTitle') : t('jobDialog_addTitle')}
+          </h3>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+            className="rounded-full p-1 text-slate-500 hover:bg-slate-100"
+          >
+            <X size={20} />
+            <span className="sr-only">Đóng</span>
+          </button>
+        </header>
+
+        <div className="max-h-[calc(100vh-200px)] overflow-y-auto p-4 sm:p-6">
+          <div className="grid gap-6 md:grid-cols-3">
+            <div className="space-y-4 md:col-span-2">
+              <label className="block">
+                <span className="mb-1 block text-sm font-medium">{t('jobDialog_field_title')}</span>
+                <input
+                  value={form.title}
+                  onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                  className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none ring-4 ring-transparent placeholder:text-slate-400 focus:border-blue-600 focus:ring-blue-600/20"
+                  placeholder={t('jobDialog_field_title_placeholder')}
+                />
+              </label>
+
+              <label className="block">
+                <span className="mb-1 block text-sm font-medium">{t('jobDialog_field_desc')}</span>
+                <textarea
+                  value={form.description}
+                  onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                  className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none ring-4 ring-transparent placeholder:text-slate-400 focus:border-blue-600 focus:ring-blue-600/20"
+                  rows={10}
+                  placeholder={t('jobDialog_field_desc_placeholder')}
+                />
+              </label>
+            </div>
+
+            <div className="space-y-4">
+              <label className="block">
+                <span className="mb-1 block text-sm font-medium">{t('jobDialog_field_posted')}</span>
+                <input
+                  type="date"
+                  value={form.postedAt}
+                  onChange={(e) => setForm((f) => ({ ...f, postedAt: e.target.value }))}
+                  className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none ring-4 ring-transparent focus:border-blue-600 focus:ring-blue-600/20"
+                />
+              </label>
+
+              <label className="block">
+                <span className="mb-1 block text-sm font-medium">{t('jobDialog_field_expires')}</span>
+                <input
+                  type="date"
+                  value={form.expiredAt}
+                  onChange={(e) => setForm((f) => ({ ...f, expiredAt: e.target.value }))}
+                  className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none ring-4 ring-transparent focus:border-blue-600 focus:ring-blue-600/20"
+                />
+              </label>
+
+              <label className="block">
+                <span className="mb-1 block text-sm font-medium">{t('jobDialog_field_status')}</span>
+                <select
+                  value={form.status}
+                  onChange={(e) => setForm((f) => ({ ...f, status: e.target.value as any }))}
+                  className={`w-full rounded-xl border px-3 py-2 text-sm font-medium outline-none ring-4 ring-transparent transition-colors focus:border-blue-600 focus:ring-blue-600/20 ${
+                    form.status === 'open' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' :
+                    form.status === 'closed' ? 'border-slate-300 bg-slate-100 text-slate-700' :
+                    'border-amber-200 bg-amber-50 text-amber-700'
+                  }`}
+                >
+                  <option value="open">{t('jobDialog_status_open')}</option>
+                  <option value="closed">{t('jobDialog_status_closed')}</option>
+                  <option value="draft">{t('jobDialog_status_draft')}</option>
+                </select>
+              </label>
+
+              {form.id && (
+                <label className="block">
+                  <span className="mb-1 block text-sm font-medium">{t('jobDialog_field_applicants')}</span>
+                  <input
+                    type="number"
+                    min={0}
+                    value={form.applicants.length}
+                    readOnly
+                    className="w-full cursor-not-allowed rounded-xl border border-slate-300 bg-slate-100 px-3 py-2 text-sm text-slate-500 outline-none ring-4 ring-transparent focus:border-blue-600 focus:ring-blue-600/20"
+                  />
+                </label>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <footer className="flex justify-end gap-2 border-t border-slate-200 p-4 sm:p-6">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             {t('jobDialog_cancel')}
           </button>
           <button
             type="button"
             onClick={() => onSave(form)}
-            className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:brightness-110"
+            className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             {t('jobDialog_save')}
           </button>
-        </div>
+        </footer>
       </div>
     </div>
   );
